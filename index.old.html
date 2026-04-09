@@ -1,0 +1,2319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Water Bottle Supplier</title>
+    <style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-color: #0ea5e9;
+    --primary-dark: #0284c7;
+    --primary-light: #e0f2fe;
+    --success-color: #22c55e;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --bg-color: #f1f5f9;
+    --card-bg: #ffffff;
+    --border-color: #e2e8f0;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+.app-container {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background-color: var(--bg-color);
+}
+
+.header {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    padding: 1.5rem 1rem;
+    text-align: center;
+}
+
+.header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.header .date {
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+.nav-tabs {
+    display: flex;
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.tab-btn {
+    flex: 1;
+    min-width: fit-content;
+    padding: 0.875rem 0.5rem;
+    border: none;
+    background: none;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+}
+
+.tab-btn.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+.tab-btn:hover {
+    background-color: var(--primary-light);
+}
+
+.main-content {
+    padding: 1rem;
+    padding-bottom: 2rem;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background-color: var(--card-bg);
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: var(--shadow);
+}
+
+.stat-icon {
+    font-size: 1.75rem;
+}
+
+.stat-info h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.stat-info p {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.section-header h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    border: none;
+    padding: 0.625rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-lg);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-secondary {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 0.625rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background-color: var(--border-color);
+}
+
+.btn-full {
+    width: 100%;
+    padding: 0.875rem;
+}
+
+.btn-small {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+.btn-danger {
+    background-color: var(--danger-color);
+}
+
+.search-box {
+    margin-bottom: 1rem;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 0.875rem;
+    background-color: var(--card-bg);
+    transition: all 0.2s ease;
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.user-list, .delivery-list, .history-list, .recent-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.user-card, .delivery-card, .history-card {
+    background-color: var(--card-bg);
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: var(--shadow);
+}
+
+.user-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.user-info h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.user-info p {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.125rem;
+}
+
+.user-info .default-bottles {
+    display: inline-block;
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+    padding: 0.125rem 0.5rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    margin-top: 0.375rem;
+}
+
+.user-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.action-btn.edit {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+}
+
+.action-btn.delete {
+    background-color: #fee2e2;
+    color: var(--danger-color);
+}
+
+.action-btn:hover {
+    transform: scale(1.1);
+}
+
+.delivery-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 100px;
+}
+
+.delivery-info h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.delivery-info p {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.bottle-count {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: var(--primary-light);
+    padding: 0.5rem 0.75rem;
+    border-radius: 10px;
+}
+
+.bottle-count span {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.bottle-count small {
+    font-size: 0.625rem;
+    color: var(--text-secondary);
+}
+
+.history-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.history-date {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+/* History Table Styles */
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 1rem;
+}
+
+.history-table th {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    padding: 0.75rem 0.5rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.history-table td {
+    padding: 0.6rem 0.5rem;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.85rem;
+}
+
+.history-table tr:last-child td {
+    border-bottom: none;
+}
+
+.history-table .date-cell {
+    font-weight: 600;
+    color: var(--primary);
+    white-space: nowrap;
+}
+
+.history-table .customer-cell {
+    font-weight: 500;
+}
+
+.history-table .bottles-cell {
+    text-align: center;
+    font-weight: 600;
+}
+
+.history-table .amount-cell {
+    text-align: right;
+    color: #22c55e;
+    font-weight: 600;
+}
+
+.history-table .day-total-row {
+    background: #f8fafc;
+}
+
+.history-table .day-total-row td {
+    font-weight: 700;
+    border-top: 2px solid var(--primary);
+    color: var(--text-primary);
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.375rem;
+    color: var(--text-primary);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 16px;
+    font-family: inherit;
+    background-color: var(--card-bg);
+    transition: all 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.form-group textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.quantity-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.quantity-selector input {
+    width: 80px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.qty-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background-color: var(--card-bg);
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.qty-btn:hover {
+    background-color: var(--primary-light);
+    border-color: var(--primary-color);
+}
+
+.qty-btn:active {
+    transform: scale(0.95);
+}
+
+.filter-group {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.filter-group select,
+.filter-group input {
+    flex: 1;
+    padding: 0.625rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 16px;
+    background-color: var(--card-bg);
+}
+
+.history-summary {
+    background-color: var(--card-bg);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-top: 1rem;
+    box-shadow: var(--shadow);
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.summary-item span {
+    color: var(--text-secondary);
+}
+
+.summary-item strong {
+    font-size: 1.25rem;
+    color: var(--primary-color);
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.modal.active {
+    display: flex;
+    animation: fadeIn 0.2s ease;
+}
+
+.modal-content {
+    background-color: var(--card-bg);
+    width: 100%;
+    max-width: 480px;
+    border-radius: 20px 20px 0 0;
+    padding: 1.5rem;
+    animation: slideUp 0.3s ease;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.modal-header h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.close-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background-color: var(--bg-color);
+    font-size: 1.25rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.modal-actions button {
+    flex: 1;
+}
+
+.toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background-color: var(--text-primary);
+    color: white;
+    padding: 0.875rem 1.5rem;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 2000;
+    max-width: calc(100% - 2rem);
+    text-align: center;
+}
+
+.toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.toast.success {
+    background-color: var(--success-color);
+}
+
+.toast.error {
+    background-color: var(--danger-color);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.delivery-form {
+    background-color: var(--card-bg);
+    padding: 1.25rem;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+@media (max-width: 360px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .tab-btn {
+        font-size: 0.75rem;
+        padding: 0.75rem 0.25rem;
+    }
+}
+
+/* Login Screen Styles */
+.login-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.login-screen.hidden {
+    display: none;
+}
+
+.login-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    width: 90%;
+    max-width: 320px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+.login-card .logo {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+.login-card h2 {
+    color: var(--primary-dark);
+    margin-bottom: 0.25rem;
+    font-size: 1.25rem;
+}
+
+.login-card .subtitle {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin-bottom: 1.5rem;
+}
+
+.login-card .pin-input {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.5rem;
+    text-align: center;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    letter-spacing: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.login-card .pin-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.login-card .login-btn {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.login-card .login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
+}
+
+.login-card .login-error {
+    color: var(--danger-color);
+    font-size: 0.8rem;
+    margin-top: 1rem;
+    display: none;
+}
+
+.login-card .login-error.show {
+    display: block;
+}
+
+.logout-btn {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: 5px;
+    color: white;
+    font-size: 0.7rem;
+    cursor: pointer;
+}
+
+.logout-btn:hover {
+    background: rgba(255,255,255,0.3);
+}
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-card">
+            <div class="logo">💧</div>
+            <h2>Water Bottle Supplier</h2>
+            <p class="subtitle">Enter PIN to continue</p>
+            <form id="loginForm">
+                <input type="password" class="pin-input" id="pinInput" maxlength="20" placeholder="Enter PIN" autocomplete="off">
+                <button type="submit" class="login-btn">Unlock</button>
+            </form>
+            <p class="login-error" id="loginError">Invalid PIN. Please try again.</p>
+        </div>
+    </div>
+
+    <div class="app-container" id="appContainer" style="display: none;">
+        <!-- Header -->
+        <header class="header">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span id="connectionStatus" style="font-size: 0.7rem;">📱 Local</span>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button id="refreshBtn" style="background: rgba(255,255,255,0.2); border: none; padding: 0.25rem 0.5rem; border-radius: 5px; color: white; font-size: 0.75rem; cursor: pointer;">🔄 Sync</button>
+                    <button id="logoutBtn" class="logout-btn">🚪 Logout</button>
+                </div>
+            </div>
+            <h1>💧 Water Supply</h1>
+            <p class="date" id="currentDate"></p>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+            <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+            <button class="tab-btn" data-tab="users">Users</button>
+            <button class="tab-btn" data-tab="delivery">Delivery</button>
+            <button class="tab-btn" data-tab="returns">Returns</button>
+            <button class="tab-btn" data-tab="history">History</button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Tab -->
+            <section id="dashboard" class="tab-content active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-icon">👥</span>
+                        <div class="stat-info">
+                            <h3 id="totalUsers">0</h3>
+                            <p>Total Users</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon">🍶</span>
+                        <div class="stat-info">
+                            <h3 id="todayBottles">0</h3>
+                            <p>Today's Bottles</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon">📦</span>
+                        <div class="stat-info">
+                            <h3 id="monthBottles">0</h3>
+                            <p>This Month</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon">⏳</span>
+                        <div class="stat-info">
+                            <h3 id="pendingDeliveries">0</h3>
+                            <p>Pending Today</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card" style="margin-bottom: 1rem; background: linear-gradient(135deg, #fef3c7, #fde68a);">
+                    <span class="stat-icon">🔄</span>
+                    <div class="stat-info">
+                        <h3 id="dashboardBottlesOut" style="color: #d97706;">0</h3>
+                        <p style="color: #92400e;">Bottles Out (Not Returned)</p>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1rem;">
+                    <button class="btn-primary btn-full" id="bulkOrderBtn" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                        📦 Bulk / Special Order
+                    </button>
+                </div>
+
+                <div class="section-header">
+                    <h2>Pending Deliveries</h2>
+                </div>
+                <div class="pending-list" id="pendingList">
+                    <p class="empty-state">All deliveries completed!</p>
+                </div>
+
+                <div class="section-header" style="margin-top: 1.5rem;">
+                    <h2>Recent Deliveries</h2>
+                </div>
+                <div class="recent-list" id="recentDeliveries">
+                    <p class="empty-state">No deliveries yet today</p>
+                </div>
+            </section>
+
+            <!-- Users Tab -->
+            <section id="users" class="tab-content">
+                <div class="section-header">
+                    <h2>Manage Users</h2>
+                    <button class="btn-primary" id="addUserBtn">+ Add User</button>
+                </div>
+
+                <div class="search-box">
+                    <input type="text" id="searchUser" placeholder="Search users...">
+                </div>
+
+                <div class="user-list" id="userList">
+                    <p class="empty-state">No users added yet</p>
+                </div>
+            </section>
+
+            <!-- Delivery Tab -->
+            <section id="delivery" class="tab-content">
+                <div class="section-header">
+                    <h2>Add Daily Delivery</h2>
+                </div>
+
+                <form id="deliveryForm" class="delivery-form">
+                    <div class="form-group">
+                        <label for="deliveryUser">Select User</label>
+                        <select id="deliveryUser" required>
+                            <option value="">Choose a user...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="deliveryDate">Delivery Date</label>
+                        <input type="date" id="deliveryDate" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bottleCount">Number of Bottles</label>
+                        <div class="quantity-selector">
+                            <button type="button" class="qty-btn" id="decreaseQty">−</button>
+                            <input type="number" id="bottleCount" value="1" min="1" max="100" required>
+                            <button type="button" class="qty-btn" id="increaseQty">+</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="deliveryPrice">Price per Bottle (₹)</label>
+                        <input type="number" id="deliveryPrice" value="20" min="1" max="1000">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="deliveryNotes">Notes (Optional)</label>
+                        <textarea id="deliveryNotes" placeholder="Any special notes..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-primary btn-full">Add Delivery</button>
+                </form>
+            </section>
+
+            <!-- Returns Tab -->
+            <section id="returns" class="tab-content">
+                <div class="section-header">
+                    <h2>Bottle Returns</h2>
+                    <button class="btn-primary" id="addReturnBtn" style="background: linear-gradient(135deg, #22c55e, #16a34a);">+ Record Return</button>
+                </div>
+
+                <div class="stats-grid" style="margin-bottom: 1rem;">
+                    <div class="stat-card">
+                        <span class="stat-icon">📥</span>
+                        <div class="stat-info">
+                            <h3 id="todayReturns">0</h3>
+                            <p>Today's Returns</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon">📊</span>
+                        <div class="stat-info">
+                            <h3 id="totalBottlesOut">0</h3>
+                            <p>Bottles Out</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <select id="returnsUserFilter">
+                        <option value="">All Users</option>
+                    </select>
+                    <input type="month" id="returnsMonthFilter">
+                </div>
+
+                <div class="section-header" style="margin-top: 1rem;">
+                    <h2>Recent Returns</h2>
+                </div>
+                <div class="history-list" id="returnsList">
+                    <p class="empty-state">No returns recorded yet</p>
+                </div>
+
+                <div class="history-summary" id="returnsSummary">
+                    <div class="summary-item">
+                        <span>Total Returns (filtered):</span>
+                        <strong id="returnsTotalBottles" style="color: #22c55e;">0</strong>
+                    </div>
+                </div>
+            </section>
+
+            <!-- History Tab -->
+            <section id="history" class="tab-content">
+                <div class="section-header">
+                    <h2>Delivery History</h2>
+                    <button class="btn-primary btn-small" id="shareBillBtn" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                        📤 Share Bill
+                    </button>
+                </div>
+
+                <div class="filter-group">
+                    <select id="historyUserFilter">
+                        <option value="">All Users</option>
+                    </select>
+                    <input type="month" id="historyMonthFilter">
+                </div>
+
+                <div class="history-list" id="historyList">
+                    <p class="empty-state">No delivery history</p>
+                </div>
+
+                <div class="history-summary" id="historySummary">
+                    <div class="summary-item">
+                        <span>Total Bottles:</span>
+                        <strong id="historyTotalBottles">0</strong>
+                    </div>
+                    <div class="summary-item" style="margin-top: 0.5rem;">
+                        <span>Total Amount:</span>
+                        <strong id="historyTotalAmount" style="color: #22c55e;">₹0</strong>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Add User Modal -->
+        <div class="modal" id="userModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modalTitle">Add New User</h2>
+                    <button class="close-btn" id="closeModal">&times;</button>
+                </div>
+                <form id="userForm">
+                    <input type="hidden" id="userId">
+                    <div class="form-group">
+                        <label for="userName">Full Name *</label>
+                        <input type="text" id="userName" required placeholder="Enter full name">
+                    </div>
+                    <div class="form-group">
+                        <label for="userPhone">Phone Number *</label>
+                        <input type="tel" id="userPhone" required placeholder="Enter phone number">
+                    </div>
+                    <div class="form-group">
+                        <label for="userAddress">Address (Optional)</label>
+                        <textarea id="userAddress" placeholder="Enter address"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="userDefaultBottles">Default Daily Bottles</label>
+                        <input type="number" id="userDefaultBottles" value="1" min="1" max="50">
+                    </div>
+                    <div class="form-group">
+                        <label for="userPrice">Price per Bottle (₹)</label>
+                        <input type="number" id="userPrice" value="20" min="1" max="1000">
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" id="cancelModal">Cancel</button>
+                        <button type="submit" class="btn-primary">Save User</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Bulk Order Modal -->
+        <div class="modal" id="bulkModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Bulk / Special Order</h2>
+                    <button class="close-btn" id="closeBulkModal">&times;</button>
+                </div>
+                <form id="bulkForm">
+                    <div class="form-group">
+                        <label for="bulkName">Customer Name *</label>
+                        <input type="text" id="bulkName" required placeholder="Enter customer name">
+                    </div>
+                    <div class="form-group">
+                        <label for="bulkPhone">Phone Number *</label>
+                        <input type="tel" id="bulkPhone" required placeholder="Enter phone number">
+                    </div>
+                    <div class="form-group">
+                        <label for="bulkAddress">Address (Optional)</label>
+                        <textarea id="bulkAddress" placeholder="Enter address"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="bulkBottles">Number of Bottles *</label>
+                        <div class="quantity-selector">
+                            <button type="button" class="qty-btn" id="decreaseBulkQty">−</button>
+                            <input type="number" id="bulkBottles" value="5" min="1" max="500" required>
+                            <button type="button" class="qty-btn" id="increaseBulkQty">+</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="bulkPrice">Price per Bottle (₹)</label>
+                        <input type="number" id="bulkPrice" value="20" min="1" max="1000">
+                    </div>
+                    <div class="form-group">
+                        <label for="bulkNotes">Notes (Optional)</label>
+                        <textarea id="bulkNotes" placeholder="Special instructions..."></textarea>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" id="cancelBulkModal">Cancel</button>
+                        <button type="submit" class="btn-primary">Add Order</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Return Bottle Modal -->
+        <div class="modal" id="returnModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Record Bottle Return</h2>
+                    <button class="close-btn" id="closeReturnModal">&times;</button>
+                </div>
+                <form id="returnForm">
+                    <div class="form-group">
+                        <label for="returnUser">Select User *</label>
+                        <select id="returnUser" required>
+                            <option value="">Choose a user...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Bottles Out with User</label>
+                        <div id="userBottlesOutInfo" style="background: #fef3c7; padding: 0.75rem; border-radius: 8px; font-weight: 600; color: #92400e;">
+                            Select a user to see bottles out
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="returnDate">Return Date</label>
+                        <input type="date" id="returnDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="returnBottles">Number of Bottles Returned *</label>
+                        <div class="quantity-selector">
+                            <button type="button" class="qty-btn" id="decreaseReturnQty">−</button>
+                            <input type="number" id="returnBottles" value="1" min="1" max="500" required>
+                            <button type="button" class="qty-btn" id="increaseReturnQty">+</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="returnNotes">Notes (Optional)</label>
+                        <textarea id="returnNotes" placeholder="Any notes about the return..."></textarea>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" id="cancelReturnModal">Cancel</button>
+                        <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #22c55e, #16a34a);">Record Return</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Toast Notification -->
+        <div class="toast" id="toast">
+            <span id="toastMessage"></span>
+        </div>
+    </div>
+
+    <script>
+// ============== AUTHENTICATION ==============
+const PIN_HASH = '06e4e03ca2f33bfe31a11c525a702c5b23ab298754fdefdc1cba636959f766b0';
+
+class Auth {
+    static async hashPin(pin) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(pin);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    static async generateHash(pin) {
+        const hash = await this.hashPin(pin);
+        console.log('PIN hash:', hash);
+        return hash;
+    }
+
+    static isLoggedIn() {
+        return localStorage.getItem('waterApp_auth') === 'true';
+    }
+
+    static async login(pin) {
+        const hashedInput = await this.hashPin(pin);
+        if (hashedInput === PIN_HASH) {
+            localStorage.setItem('waterApp_auth', 'true');
+            return true;
+        }
+        return false;
+    }
+
+    static logout() {
+        localStorage.removeItem('waterApp_auth');
+    }
+}
+
+// Initialize auth on page load
+document.addEventListener('DOMContentLoaded', () => {
+    const loginScreen = document.getElementById('loginScreen');
+    const appContainer = document.getElementById('appContainer');
+    const loginForm = document.getElementById('loginForm');
+    const pinInput = document.getElementById('pinInput');
+    const loginError = document.getElementById('loginError');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    // Check if already logged in
+    if (Auth.isLoggedIn()) {
+        loginScreen.classList.add('hidden');
+        appContainer.style.display = 'block';
+    }
+
+    // Login form submit
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const pin = pinInput.value;
+
+        if (await Auth.login(pin)) {
+            loginError.classList.remove('show');
+            loginScreen.classList.add('hidden');
+            appContainer.style.display = 'block';
+            pinInput.value = '';
+        } else {
+            loginError.classList.add('show');
+            pinInput.value = '';
+            pinInput.focus();
+        }
+    });
+
+    // Logout button
+    logoutBtn.addEventListener('click', () => {
+        Auth.logout();
+        appContainer.style.display = 'none';
+        loginScreen.classList.remove('hidden');
+        pinInput.focus();
+    });
+});
+
+// Water Bottle Supplier App - Google Sheets Integration
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwwEppn5INTSd6gM2g_S5QDJAuslqFZJuAGrXugpnH225A9iiZK9Tvr9IIxPTcUJIaYDw/exec';
+
+const isGoogleSheetsEnabled = () => GOOGLE_SCRIPT_URL !== 'YOUR_GOOGLE_SCRIPT_URL_HERE';
+
+class GoogleSheetsAPI {
+    static async request(action, params = {}) {
+        const url = new URL(GOOGLE_SCRIPT_URL);
+        url.searchParams.append('action', action);
+        Object.keys(params).forEach(key => {
+            const value = typeof params[key] === 'object' ? JSON.stringify(params[key]) : params[key];
+            url.searchParams.append(key, value);
+        });
+        try {
+            const response = await fetch(url.toString());
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('API Error:', error);
+            throw error;
+        }
+    }
+}
+
+class DataStore {
+    constructor() {
+        this.users = [];
+        this.deliveries = [];
+        this.returns = [];
+        this.isOnline = isGoogleSheetsEnabled();
+        this.isLoading = false;
+    }
+
+    async init() {
+        console.log('DataStore initializing. Online mode:', this.isOnline);
+        if (this.isOnline) {
+            await this.syncFromCloud();
+        } else {
+            this.users = this.loadLocal('waterApp_users') || [];
+            this.deliveries = this.loadLocal('waterApp_deliveries') || [];
+            this.returns = this.loadLocal('waterApp_returns') || [];
+        }
+    }
+
+    async syncFromCloud() {
+        try {
+            this.isLoading = true;
+            const result = await GoogleSheetsAPI.request('getAllData');
+            if (result.success) {
+                this.users = result.users || [];
+                this.deliveries = result.deliveries || [];
+                this.returns = result.returns || [];
+                this.saveLocal('waterApp_users', this.users);
+                this.saveLocal('waterApp_deliveries', this.deliveries);
+                this.saveLocal('waterApp_returns', this.returns);
+            }
+        } catch (error) {
+            console.error('Sync failed, using local data:', error);
+            this.users = this.loadLocal('waterApp_users') || [];
+            this.deliveries = this.loadLocal('waterApp_deliveries') || [];
+            this.returns = this.loadLocal('waterApp_returns') || [];
+        } finally {
+            this.isLoading = false;
+        }
+    }
+
+    saveLocal(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+    loadLocal(key) { const data = localStorage.getItem(key); return data ? JSON.parse(data) : null; }
+
+    async addUser(user) {
+        if (this.isOnline) {
+            try {
+                const result = await GoogleSheetsAPI.request('addUser', { data: user });
+                if (result.success) { this.users.push(result.user); this.saveLocal('waterApp_users', this.users); return result.user; }
+            } catch (error) { console.error('Failed to add user online:', error); }
+        }
+        user.id = Date.now().toString();
+        user.createdAt = new Date().toISOString();
+        this.users.push(user);
+        this.saveLocal('waterApp_users', this.users);
+        return user;
+    }
+
+    async updateUser(id, updatedData) {
+        if (this.isOnline) {
+            try {
+                const result = await GoogleSheetsAPI.request('updateUser', { id, data: updatedData });
+                if (result.success) {
+                    const index = this.users.findIndex(u => u.id == id);
+                    if (index !== -1) { this.users[index] = { ...this.users[index], ...updatedData }; this.saveLocal('waterApp_users', this.users); }
+                    return this.users[index];
+                }
+            } catch (error) { console.error('Failed to update user online:', error); }
+        }
+        const index = this.users.findIndex(u => u.id == id);
+        if (index !== -1) { this.users[index] = { ...this.users[index], ...updatedData }; this.saveLocal('waterApp_users', this.users); return this.users[index]; }
+        return null;
+    }
+
+    async deleteUser(id) {
+        if (this.isOnline) { try { await GoogleSheetsAPI.request('deleteUser', { id }); } catch (error) { console.error('Failed to delete user online:', error); } }
+        this.users = this.users.filter(u => u.id != id);
+        this.saveLocal('waterApp_users', this.users);
+    }
+
+    getUser(id) { return this.users.find(u => u.id == id); }
+
+    searchUsers(query) {
+        const lowerQuery = query.toLowerCase();
+        return this.users.filter(u => u.name.toLowerCase().includes(lowerQuery) || u.phone.includes(query) || u.address.toLowerCase().includes(lowerQuery));
+    }
+
+    async addDelivery(delivery) {
+        if (this.isOnline) {
+            try {
+                const result = await GoogleSheetsAPI.request('addDelivery', { data: delivery });
+                if (result.success) { this.deliveries.push(result.delivery); this.saveLocal('waterApp_deliveries', this.deliveries); return result.delivery; }
+            } catch (error) { console.error('Failed to add delivery online:', error); }
+        }
+        delivery.id = Date.now().toString();
+        delivery.createdAt = new Date().toISOString();
+        this.deliveries.push(delivery);
+        this.saveLocal('waterApp_deliveries', this.deliveries);
+        return delivery;
+    }
+
+    async deleteDelivery(id) {
+        if (this.isOnline) { try { await GoogleSheetsAPI.request('deleteDelivery', { id }); } catch (error) { console.error('Failed to delete delivery online:', error); } }
+        this.deliveries = this.deliveries.filter(d => d.id != id);
+        this.saveLocal('waterApp_deliveries', this.deliveries);
+    }
+
+    getDeliveriesByDate(date) {
+        return this.deliveries.filter(d => {
+            if (!d.date) return false;
+            // Handle different date formats: "2024-12-27", "12/27/2024", Date object, etc.
+            let deliveryDate = String(d.date);
+            // If it's already in YYYY-MM-DD format, use directly
+            if (/^\d{4}-\d{2}-\d{2}$/.test(deliveryDate)) {
+                return deliveryDate === date;
+            }
+            // Otherwise try to parse and format
+            try {
+                const parsed = new Date(d.date);
+                if (!isNaN(parsed.getTime())) {
+                    // Use local date to avoid timezone issues
+                    const year = parsed.getFullYear();
+                    const month = String(parsed.getMonth() + 1).padStart(2, '0');
+                    const day = String(parsed.getDate()).padStart(2, '0');
+                    deliveryDate = `${year}-${month}-${day}`;
+                }
+            } catch(e) { return false; }
+            return deliveryDate === date;
+        });
+    }
+    getDeliveriesByUser(userId) { return this.deliveries.filter(d => d.userId == userId); }
+    getDeliveriesByMonth(year, month) { return this.deliveries.filter(d => { const deliveryDate = new Date(d.date); return deliveryDate.getFullYear() === year && deliveryDate.getMonth() === month; }); }
+    getTodayBottleCount() { const today = formatDate(new Date()); return this.getDeliveriesByDate(today).reduce((sum, d) => sum + parseInt(d.bottles), 0); }
+    getMonthBottleCount() { const now = new Date(); return this.getDeliveriesByMonth(now.getFullYear(), now.getMonth()).reduce((sum, d) => sum + parseInt(d.bottles), 0); }
+    getPendingDeliveries() { const today = formatDate(new Date()); const deliveredUserIds = this.getDeliveriesByDate(today).map(d => String(d.userId)); return this.users.filter(u => !deliveredUserIds.includes(String(u.id)) && u.active !== false); }
+
+    // Returns management
+    async addReturn(returnData) {
+        if (this.isOnline) {
+            try {
+                const result = await GoogleSheetsAPI.request('addReturn', { data: returnData });
+                if (result.success) { this.returns.push(result.return); this.saveLocal('waterApp_returns', this.returns); return result.return; }
+            } catch (error) { console.error('Failed to add return online:', error); }
+        }
+        returnData.id = Date.now().toString();
+        returnData.createdAt = new Date().toISOString();
+        this.returns.push(returnData);
+        this.saveLocal('waterApp_returns', this.returns);
+        return returnData;
+    }
+
+    async deleteReturn(id) {
+        if (this.isOnline) { try { await GoogleSheetsAPI.request('deleteReturn', { id }); } catch (error) { console.error('Failed to delete return online:', error); } }
+        this.returns = this.returns.filter(r => r.id != id);
+        this.saveLocal('waterApp_returns', this.returns);
+    }
+
+    getReturnsByDate(date) {
+        return this.returns.filter(r => {
+            if (!r.date) return false;
+            let returnDate = String(r.date);
+            if (/^\d{4}-\d{2}-\d{2}$/.test(returnDate)) {
+                return returnDate === date;
+            }
+            try {
+                const parsed = new Date(r.date);
+                if (!isNaN(parsed.getTime())) {
+                    const year = parsed.getFullYear();
+                    const month = String(parsed.getMonth() + 1).padStart(2, '0');
+                    const day = String(parsed.getDate()).padStart(2, '0');
+                    returnDate = `${year}-${month}-${day}`;
+                }
+            } catch(e) { return false; }
+            return returnDate === date;
+        });
+    }
+
+    getReturnsByUser(userId) { return this.returns.filter(r => r.userId == userId); }
+
+    getReturnsByMonth(year, month) {
+        return this.returns.filter(r => {
+            const returnDate = new Date(r.date);
+            return returnDate.getFullYear() === year && returnDate.getMonth() === month;
+        });
+    }
+
+    getTodayReturnCount() { const today = formatDate(new Date()); return this.getReturnsByDate(today).reduce((sum, r) => sum + parseInt(r.bottles), 0); }
+    getMonthReturnCount() { const now = new Date(); return this.getReturnsByMonth(now.getFullYear(), now.getMonth()).reduce((sum, r) => sum + parseInt(r.bottles), 0); }
+
+    // Get total bottles out (delivered - returned) for a user
+    getUserBottlesOut(userId) {
+        const delivered = this.getDeliveriesByUser(userId).reduce((sum, d) => sum + parseInt(d.bottles), 0);
+        const returned = this.getReturnsByUser(userId).reduce((sum, r) => sum + parseInt(r.bottles), 0);
+        return delivered - returned;
+    }
+
+    // Get total bottles out for all users
+    getTotalBottlesOut() {
+        const totalDelivered = this.deliveries.reduce((sum, d) => sum + parseInt(d.bottles), 0);
+        const totalReturned = this.returns.reduce((sum, r) => sum + parseInt(r.bottles), 0);
+        return totalDelivered - totalReturned;
+    }
+}
+
+function formatDate(date) { return date.toISOString().split('T')[0]; }
+function formatDisplayDate(dateStr) { const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }; return new Date(dateStr).toLocaleDateString('en-US', options); }
+
+class App {
+    constructor() { this.store = new DataStore(); this.currentTab = 'dashboard'; this.editingUserId = null; this.init(); }
+
+    async init() {
+        this.bindElements();
+        this.showLoading(true);
+        await this.store.init();
+        this.bindEvents();
+        this.setCurrentDate();
+        this.setDefaultDeliveryDate();
+        this.updateConnectionStatus();
+        this.updateDashboard();
+        this.renderUsers();
+        this.populateUserDropdowns();
+        this.setDefaultHistoryFilter();
+        this.setDefaultReturnsFilter();
+        this.renderHistory();
+        this.renderReturns();
+        this.showLoading(false);
+    }
+
+    showLoading(show) { document.body.style.opacity = show ? '0.7' : '1'; document.body.style.pointerEvents = show ? 'none' : 'auto'; }
+
+    updateConnectionStatus() {
+        const statusEl = document.getElementById('connectionStatus');
+        if (statusEl) {
+            if (this.store.isOnline) { statusEl.textContent = '☁️ Cloud Sync'; statusEl.style.color = '#22c55e'; }
+            else { statusEl.textContent = '📱 Local Only'; statusEl.style.color = '#f59e0b'; }
+        }
+    }
+
+    bindElements() {
+        this.tabBtns = document.querySelectorAll('.tab-btn');
+        this.tabContents = document.querySelectorAll('.tab-content');
+        this.totalUsersEl = document.getElementById('totalUsers');
+        this.todayBottlesEl = document.getElementById('todayBottles');
+        this.monthBottlesEl = document.getElementById('monthBottles');
+        this.pendingDeliveriesEl = document.getElementById('pendingDeliveries');
+        this.recentDeliveriesEl = document.getElementById('recentDeliveries');
+        this.addUserBtn = document.getElementById('addUserBtn');
+        this.searchUserInput = document.getElementById('searchUser');
+        this.userListEl = document.getElementById('userList');
+        this.userModal = document.getElementById('userModal');
+        this.modalTitle = document.getElementById('modalTitle');
+        this.userForm = document.getElementById('userForm');
+        this.userIdInput = document.getElementById('userId');
+        this.userNameInput = document.getElementById('userName');
+        this.userPhoneInput = document.getElementById('userPhone');
+        this.userAddressInput = document.getElementById('userAddress');
+        this.userDefaultBottlesInput = document.getElementById('userDefaultBottles');
+        this.userPriceInput = document.getElementById('userPrice');
+        this.closeModalBtn = document.getElementById('closeModal');
+        this.cancelModalBtn = document.getElementById('cancelModal');
+        this.deliveryForm = document.getElementById('deliveryForm');
+        this.deliveryUserSelect = document.getElementById('deliveryUser');
+        this.deliveryDateInput = document.getElementById('deliveryDate');
+        this.bottleCountInput = document.getElementById('bottleCount');
+        this.deliveryPriceInput = document.getElementById('deliveryPrice');
+        this.deliveryNotesInput = document.getElementById('deliveryNotes');
+        this.decreaseQtyBtn = document.getElementById('decreaseQty');
+        this.increaseQtyBtn = document.getElementById('increaseQty');
+        this.historyUserFilter = document.getElementById('historyUserFilter');
+        this.historyMonthFilter = document.getElementById('historyMonthFilter');
+        this.historyListEl = document.getElementById('historyList');
+        this.historyTotalBottlesEl = document.getElementById('historyTotalBottles');
+        this.historyTotalAmountEl = document.getElementById('historyTotalAmount');
+        this.shareBillBtn = document.getElementById('shareBillBtn');
+        this.toast = document.getElementById('toast');
+        // Bulk order elements
+        this.bulkOrderBtn = document.getElementById('bulkOrderBtn');
+        this.bulkModal = document.getElementById('bulkModal');
+        this.bulkForm = document.getElementById('bulkForm');
+        this.closeBulkModalBtn = document.getElementById('closeBulkModal');
+        this.cancelBulkModalBtn = document.getElementById('cancelBulkModal');
+        this.bulkBottlesInput = document.getElementById('bulkBottles');
+        this.decreaseBulkQtyBtn = document.getElementById('decreaseBulkQty');
+        this.increaseBulkQtyBtn = document.getElementById('increaseBulkQty');
+        this.toastMessage = document.getElementById('toastMessage');
+        // Return elements
+        this.addReturnBtn = document.getElementById('addReturnBtn');
+        this.returnModal = document.getElementById('returnModal');
+        this.returnForm = document.getElementById('returnForm');
+        this.closeReturnModalBtn = document.getElementById('closeReturnModal');
+        this.cancelReturnModalBtn = document.getElementById('cancelReturnModal');
+        this.returnUserSelect = document.getElementById('returnUser');
+        this.returnDateInput = document.getElementById('returnDate');
+        this.returnBottlesInput = document.getElementById('returnBottles');
+        this.returnNotesInput = document.getElementById('returnNotes');
+        this.decreaseReturnQtyBtn = document.getElementById('decreaseReturnQty');
+        this.increaseReturnQtyBtn = document.getElementById('increaseReturnQty');
+        this.userBottlesOutInfo = document.getElementById('userBottlesOutInfo');
+        this.returnsUserFilter = document.getElementById('returnsUserFilter');
+        this.returnsMonthFilter = document.getElementById('returnsMonthFilter');
+        this.returnsListEl = document.getElementById('returnsList');
+        this.returnsTotalBottlesEl = document.getElementById('returnsTotalBottles');
+        this.todayReturnsEl = document.getElementById('todayReturns');
+        this.totalBottlesOutEl = document.getElementById('totalBottlesOut');
+    }
+
+    bindEvents() {
+        this.tabBtns.forEach(btn => { btn.addEventListener('click', () => this.switchTab(btn.dataset.tab)); });
+        this.addUserBtn.addEventListener('click', () => this.openUserModal());
+        this.closeModalBtn.addEventListener('click', () => this.closeUserModal());
+        this.cancelModalBtn.addEventListener('click', () => this.closeUserModal());
+        this.userForm.addEventListener('submit', (e) => this.handleUserSubmit(e));
+        this.searchUserInput.addEventListener('input', (e) => this.handleUserSearch(e));
+        this.userModal.addEventListener('click', (e) => { if (e.target === this.userModal) this.closeUserModal(); });
+        this.deliveryForm.addEventListener('submit', (e) => this.handleDeliverySubmit(e));
+        this.decreaseQtyBtn.addEventListener('click', () => this.adjustQuantity(-1));
+        this.increaseQtyBtn.addEventListener('click', () => this.adjustQuantity(1));
+        this.deliveryUserSelect.addEventListener('change', (e) => { const user = this.store.getUser(e.target.value); if (user) { this.bottleCountInput.value = user.defaultBottles || 1; this.deliveryPriceInput.value = user.price || 20; } });
+        this.historyUserFilter.addEventListener('change', () => this.renderHistory());
+        this.historyMonthFilter.addEventListener('change', () => this.renderHistory());
+        const refreshBtn = document.getElementById('refreshBtn');
+        if (refreshBtn) { refreshBtn.addEventListener('click', () => this.refreshData()); }
+        // Bulk order events
+        this.bulkOrderBtn.addEventListener('click', () => this.openBulkModal());
+        this.closeBulkModalBtn.addEventListener('click', () => this.closeBulkModal());
+        this.cancelBulkModalBtn.addEventListener('click', () => this.closeBulkModal());
+        this.bulkModal.addEventListener('click', (e) => { if (e.target === this.bulkModal) this.closeBulkModal(); });
+        this.bulkForm.addEventListener('submit', (e) => this.handleBulkSubmit(e));
+        this.decreaseBulkQtyBtn.addEventListener('click', () => this.adjustBulkQuantity(-1));
+        this.increaseBulkQtyBtn.addEventListener('click', () => this.adjustBulkQuantity(1));
+        // Print bill event
+        this.shareBillBtn.addEventListener('click', () => this.shareBill());
+        // Return events
+        this.addReturnBtn.addEventListener('click', () => this.openReturnModal());
+        this.closeReturnModalBtn.addEventListener('click', () => this.closeReturnModal());
+        this.cancelReturnModalBtn.addEventListener('click', () => this.closeReturnModal());
+        this.returnModal.addEventListener('click', (e) => { if (e.target === this.returnModal) this.closeReturnModal(); });
+        this.returnForm.addEventListener('submit', (e) => this.handleReturnSubmit(e));
+        this.decreaseReturnQtyBtn.addEventListener('click', () => this.adjustReturnQuantity(-1));
+        this.increaseReturnQtyBtn.addEventListener('click', () => this.adjustReturnQuantity(1));
+        this.returnUserSelect.addEventListener('change', (e) => this.updateUserBottlesOutInfo(e.target.value));
+        this.returnsUserFilter.addEventListener('change', () => this.renderReturns());
+        this.returnsMonthFilter.addEventListener('change', () => this.renderReturns());
+    }
+
+    async refreshData() { this.showLoading(true); await this.store.syncFromCloud(); this.updateDashboard(); this.renderUsers(); this.populateUserDropdowns(); this.renderHistory(); this.renderReturns(); this.showLoading(false); this.showToast('Data refreshed!', 'success'); }
+
+    setCurrentDate() { const now = new Date(); const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }; document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', options); }
+    setDefaultDeliveryDate() { this.deliveryDateInput.value = formatDate(new Date()); }
+    setDefaultHistoryFilter() { const now = new Date(); this.historyMonthFilter.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`; }
+    setDefaultReturnsFilter() { const now = new Date(); this.returnsMonthFilter.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`; }
+
+    switchTab(tabId) {
+        this.currentTab = tabId;
+        this.tabBtns.forEach(btn => { btn.classList.toggle('active', btn.dataset.tab === tabId); });
+        this.tabContents.forEach(content => { content.classList.toggle('active', content.id === tabId); });
+        if (tabId === 'dashboard') { this.updateDashboard(); }
+        else if (tabId === 'delivery') { this.populateUserDropdowns(); }
+        else if (tabId === 'returns') { this.populateUserDropdowns(); this.renderReturns(); }
+        else if (tabId === 'history') { this.populateUserDropdowns(); this.renderHistory(); }
+    }
+
+    updateDashboard() {
+        this.totalUsersEl.textContent = this.store.users.length;
+        this.todayBottlesEl.textContent = this.store.getTodayBottleCount();
+        this.monthBottlesEl.textContent = this.store.getMonthBottleCount();
+        const today = formatDate(new Date());
+        const pendingUsers = this.store.getPendingDeliveries();
+        this.pendingDeliveriesEl.textContent = pendingUsers.length;
+        // Update bottles out stat
+        const dashboardBottlesOutEl = document.getElementById('dashboardBottlesOut');
+        if (dashboardBottlesOutEl) {
+            dashboardBottlesOutEl.textContent = this.store.getTotalBottlesOut();
+        }
+
+        // Render pending users with quick deliver button
+        const pendingListEl = document.getElementById('pendingList');
+        if (pendingUsers.length === 0) {
+            pendingListEl.innerHTML = '<p class="empty-state">All deliveries completed!</p>';
+        } else {
+            const sortedPending = [...pendingUsers].sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+            pendingListEl.innerHTML = sortedPending.map(user => {
+                const bottlesOut = this.store.getUserBottlesOut(user.id);
+                const bottlesOutBadge = bottlesOut > 0
+                    ? `<span style="background: #fee2e2; color: #dc2626; padding: 0.15rem 0.4rem; border-radius: 10px; font-size: 0.65rem; font-weight: 600; margin-left: 0.25rem;">🔄${bottlesOut}</span>`
+                    : '';
+                const defaultReturn = bottlesOut > 0 ? bottlesOut : 0;
+                return `
+                <div class="delivery-card" style="flex-wrap: wrap; gap: 0.5rem; padding: 0.75rem; align-items: center;">
+                    <div style="min-width: 70px; flex: 1;">
+                        <h4 style="font-size: 0.85rem; margin-bottom: 0.1rem; display: flex; align-items: center; flex-wrap: wrap;">${user.name}${bottlesOutBadge}</h4>
+                        <p style="color: #22c55e; font-weight: 600; font-size: 0.7rem;">₹${user.price || 20}/bottle</p>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                            <div style="display: flex; align-items: center; gap: 0.25rem;">
+                                <label style="font-size: 0.6rem; color: #0ea5e9; font-weight: 600; width: 50px;">📦 Deliver</label>
+                                <button type="button" class="qty-btn" style="width: 28px; height: 28px; font-size: 1rem; border-radius: 6px;" onclick="app.adjustInput('deliver-${user.id}', -1)">−</button>
+                                <input type="number" id="deliver-${user.id}" value="${user.defaultBottles || 1}" min="0" max="100"
+                                    style="width: 40px; text-align: center; padding: 0.3rem 0; border: 1px solid #e2e8f0; font-weight: 700; font-size: 1rem; border-radius: 6px;">
+                                <button type="button" class="qty-btn" style="width: 28px; height: 28px; font-size: 1rem; border-radius: 6px;" onclick="app.adjustInput('deliver-${user.id}', 1)">+</button>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.25rem;">
+                                <label style="font-size: 0.6rem; color: #22c55e; font-weight: 600; width: 50px;">📥 Return</label>
+                                <button type="button" class="qty-btn" style="width: 28px; height: 28px; font-size: 1rem; border-radius: 6px;" onclick="app.adjustReturnInput('${user.id}', -1)">−</button>
+                                <input type="number" id="return-${user.id}" value="${defaultReturn}" min="0" max="${bottlesOut}" data-max="${bottlesOut}"
+                                    style="width: 40px; text-align: center; padding: 0.3rem 0; border: 1px solid #e2e8f0; font-weight: 700; font-size: 1rem; border-radius: 6px;">
+                                <button type="button" class="qty-btn" style="width: 28px; height: 28px; font-size: 1rem; border-radius: 6px;" onclick="app.adjustReturnInput('${user.id}', 1)">+</button>
+                            </div>
+                        </div>
+                        <button class="btn-primary" onclick="app.quickAction('${user.id}')" style="padding: 0.5rem 0.7rem; font-size: 1rem; min-width: 36px;">
+                            ✓
+                        </button>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        // Render recent deliveries
+        const todayDeliveries = this.store.getDeliveriesByDate(today);
+        if (todayDeliveries.length === 0) { this.recentDeliveriesEl.innerHTML = '<p class="empty-state">No deliveries yet today</p>'; }
+        else { this.recentDeliveriesEl.innerHTML = todayDeliveries.slice(-5).reverse().map(d => { const user = this.store.getUser(d.userId); const price = d.price || (user ? (user.price || 20) : 20); return `<div class="delivery-card"><div class="delivery-info"><h4>${user ? user.name : 'Unknown User'}</h4><p style="color: #22c55e; font-weight: 600;">₹${price}/bottle</p></div><div class="bottle-count"><span>${d.bottles}</span><small>bottles</small></div></div>`; }).join(''); }
+    }
+
+    adjustPendingQty(userId, delta) {
+        const qtyEl = document.getElementById(`qty-${userId}`);
+        if (qtyEl) {
+            const current = parseInt(qtyEl.textContent) || 1;
+            const newValue = Math.max(1, current + delta);
+            qtyEl.textContent = newValue;
+        }
+    }
+
+    adjustInput(inputId, delta) {
+        const input = document.getElementById(inputId);
+        if (input) {
+            const current = parseInt(input.value) || 0;
+            const newValue = Math.max(0, Math.min(100, current + delta));
+            input.value = newValue;
+        }
+    }
+
+    adjustReturnInput(userId, delta) {
+        const input = document.getElementById(`return-${userId}`);
+        if (input) {
+            const current = parseInt(input.value) || 0;
+            const maxReturn = parseInt(input.getAttribute('data-max')) || 0;
+            const newValue = Math.max(0, Math.min(maxReturn, current + delta));
+            input.value = newValue;
+        }
+    }
+
+    async quickDeliver(userId) {
+        const qtyEl = document.getElementById(`qty-${userId}`);
+        const bottles = qtyEl ? parseInt(qtyEl.textContent) || 1 : 1;
+        const user = this.store.getUser(userId);
+        const price = user ? (user.price || 20) : 20;
+        this.showLoading(true);
+        const today = formatDate(new Date());
+        const delivery = { userId, date: today, bottles, price, notes: 'Quick delivery' };
+        try {
+            await this.store.addDelivery(delivery);
+            const user = this.store.getUser(userId);
+            this.showToast(`${bottles} bottle(s) delivered to ${user.name}!`, 'success');
+            this.updateDashboard();
+        } catch (error) {
+            this.showToast('Error adding delivery', 'error');
+        } finally {
+            this.showLoading(false);
+        }
+    }
+
+    async quickAction(userId) {
+        const deliverInput = document.getElementById(`deliver-${userId}`);
+        const returnInput = document.getElementById(`return-${userId}`);
+        const deliverBottles = deliverInput ? parseInt(deliverInput.value) || 0 : 0;
+        const returnBottles = returnInput ? parseInt(returnInput.value) || 0 : 0;
+        const user = this.store.getUser(userId);
+        const price = user ? (user.price || 20) : 20;
+        const bottlesOut = this.store.getUserBottlesOut(userId);
+
+        if (deliverBottles === 0 && returnBottles === 0) {
+            this.showToast('Enter delivery or return quantity', 'error');
+            return;
+        }
+
+        // Validate return doesn't exceed bottles out
+        if (returnBottles > bottlesOut) {
+            this.showToast(`Can't return more than ${bottlesOut} bottles`, 'error');
+            return;
+        }
+
+        this.showLoading(true);
+        const today = formatDate(new Date());
+        let messages = [];
+
+        try {
+            // Process delivery if any
+            if (deliverBottles > 0) {
+                const delivery = { userId, date: today, bottles: deliverBottles, price, notes: 'Quick delivery' };
+                await this.store.addDelivery(delivery);
+                messages.push(`${deliverBottles} delivered`);
+            }
+
+            // Process return if any
+            if (returnBottles > 0) {
+                const returnData = { userId, date: today, bottles: returnBottles, notes: 'Quick return' };
+                await this.store.addReturn(returnData);
+                messages.push(`${returnBottles} returned`);
+            }
+
+            this.showToast(`${user.name}: ${messages.join(', ')}!`, 'success');
+            this.updateDashboard();
+            this.renderReturns();
+        } catch (error) {
+            this.showToast('Error processing action', 'error');
+        } finally {
+            this.showLoading(false);
+        }
+    }
+
+    renderUsers(users = null) {
+        const userList = users || this.store.users;
+        if (userList.length === 0) { this.userListEl.innerHTML = '<p class="empty-state">No users added yet</p>'; return; }
+        const sortedUsers = [...userList].sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+        this.userListEl.innerHTML = sortedUsers.map(user => {
+            const bottlesOut = this.store.getUserBottlesOut(user.id);
+            const isActive = user.active !== false;
+            const bottlesOutBadge = bottlesOut > 0
+                ? `<span style="display: inline-block; background-color: #fee2e2; color: #dc2626; padding: 0.125rem 0.5rem; border-radius: 20px; font-size: 0.7rem; font-weight: 600; margin-left: 0.5rem;">🔄 ${bottlesOut} out</span>`
+                : `<span style="display: inline-block; background-color: #dcfce7; color: #16a34a; padding: 0.125rem 0.5rem; border-radius: 20px; font-size: 0.7rem; font-weight: 600; margin-left: 0.5rem;">✓ 0 out</span>`;
+            const statusBadge = isActive
+                ? `<span style="display: inline-block; background-color: #dcfce7; color: #16a34a; padding: 0.125rem 0.5rem; border-radius: 20px; font-size: 0.7rem; font-weight: 600;">Active</span>`
+                : `<span style="display: inline-block; background-color: #fef3c7; color: #d97706; padding: 0.125rem 0.5rem; border-radius: 20px; font-size: 0.7rem; font-weight: 600;">Inactive</span>`;
+            const cardStyle = isActive ? '' : 'opacity: 0.6;';
+            const toggleBtn = isActive
+                ? `<button class="action-btn" onclick="app.toggleUserActive('${user.id}')" title="Deactivate" style="background: #fef3c7;">⏸️</button>`
+                : `<button class="action-btn" onclick="app.toggleUserActive('${user.id}')" title="Activate" style="background: #dcfce7;">▶️</button>`;
+            return `<div class="user-card" data-id="${user.id}" style="${cardStyle}"><div class="user-info"><h3>${user.name} ${statusBadge}</h3><p>📞 ${user.phone}</p><p>📍 ${user.address || '-'}</p><span class="default-bottles">Default: ${user.defaultBottles} bottles/day</span><span style="display: inline-block; background-color: #dcfce7; color: #16a34a; padding: 0.125rem 0.5rem; border-radius: 20px; font-size: 0.7rem; font-weight: 600; margin-left: 0.5rem;">₹${user.price || 20}/bottle</span>${bottlesOutBadge}</div><div class="user-actions">${toggleBtn}<button class="action-btn edit" onclick="app.editUser('${user.id}')" title="Edit">✏️</button><button class="action-btn delete" onclick="app.confirmDeleteUser('${user.id}')" title="Delete">🗑️</button></div></div>`;
+        }).join('');
+    }
+
+    handleUserSearch(e) { const query = e.target.value.trim(); if (query === '') { this.renderUsers(); } else { const filtered = this.store.searchUsers(query); this.renderUsers(filtered); } }
+
+    openUserModal(userId = null) {
+        this.editingUserId = userId;
+        if (userId) { const user = this.store.getUser(userId); this.modalTitle.textContent = 'Edit User'; this.userIdInput.value = user.id; this.userNameInput.value = user.name; this.userPhoneInput.value = user.phone; this.userAddressInput.value = user.address; this.userDefaultBottlesInput.value = user.defaultBottles; this.userPriceInput.value = user.price || 20; }
+        else { this.modalTitle.textContent = 'Add New User'; this.userForm.reset(); this.userIdInput.value = ''; this.userDefaultBottlesInput.value = 1; this.userPriceInput.value = 20; }
+        this.userModal.classList.add('active');
+        this.userNameInput.focus();
+    }
+
+    closeUserModal() { this.userModal.classList.remove('active'); this.editingUserId = null; this.userForm.reset(); }
+
+    // Bulk Order Functions
+    openBulkModal() {
+        this.bulkForm.reset();
+        this.bulkBottlesInput.value = 5;
+        this.bulkModal.classList.add('active');
+        document.getElementById('bulkName').focus();
+    }
+
+    closeBulkModal() {
+        this.bulkModal.classList.remove('active');
+        this.bulkForm.reset();
+    }
+
+    adjustBulkQuantity(delta) {
+        const current = parseInt(this.bulkBottlesInput.value) || 1;
+        const newValue = Math.max(1, Math.min(500, current + delta));
+        this.bulkBottlesInput.value = newValue;
+    }
+
+    async handleBulkSubmit(e) {
+        e.preventDefault();
+        this.showLoading(true);
+
+        const name = document.getElementById('bulkName').value.trim();
+        const phone = document.getElementById('bulkPhone').value.trim();
+        const address = document.getElementById('bulkAddress').value.trim();
+        const bottles = parseInt(this.bulkBottlesInput.value) || 1;
+        const price = parseInt(document.getElementById('bulkPrice').value) || 20;
+        const notes = document.getElementById('bulkNotes').value.trim();
+
+        try {
+            // Always add as regular customer (inactive by default for bulk orders)
+            const userData = { name, phone, address: address || '', defaultBottles: bottles, price, active: false };
+            const newUser = await this.store.addUser(userData);
+            const userId = newUser.id;
+
+            // Ensure user is marked inactive in local store immediately
+            const userIndex = this.store.users.findIndex(u => u.id == userId);
+            if (userIndex !== -1) {
+                this.store.users[userIndex].active = false;
+                this.store.saveLocal('waterApp_users', this.store.users);
+            }
+
+            // Add delivery with price at time of order
+            const today = formatDate(new Date());
+            const delivery = { userId, date: today, bottles, price, notes: notes || 'Bulk order' };
+            await this.store.addDelivery(delivery);
+
+            this.showToast(`Bulk order: ${bottles} bottle(s) for ${name}!`, 'success');
+            this.closeBulkModal();
+            this.updateDashboard();
+            this.renderUsers();
+            this.populateUserDropdowns();
+        } catch (error) {
+            this.showToast('Error adding bulk order', 'error');
+        } finally {
+            this.showLoading(false);
+        }
+    }
+
+    // Return Modal Functions
+    openReturnModal() {
+        this.returnForm.reset();
+        this.returnBottlesInput.value = 1;
+        this.returnDateInput.value = formatDate(new Date());
+        this.userBottlesOutInfo.textContent = 'Select a user to see bottles out';
+        this.userBottlesOutInfo.style.background = '#fef3c7';
+        this.userBottlesOutInfo.style.color = '#92400e';
+        this.returnModal.classList.add('active');
+        this.returnUserSelect.focus();
+    }
+
+    closeReturnModal() {
+        this.returnModal.classList.remove('active');
+        this.returnForm.reset();
+    }
+
+    adjustReturnQuantity(delta) {
+        const current = parseInt(this.returnBottlesInput.value) || 1;
+        const newValue = Math.max(1, Math.min(500, current + delta));
+        this.returnBottlesInput.value = newValue;
+    }
+
+    updateUserBottlesOutInfo(userId) {
+        if (!userId) {
+            this.userBottlesOutInfo.textContent = 'Select a user to see bottles out';
+            this.userBottlesOutInfo.style.background = '#fef3c7';
+            this.userBottlesOutInfo.style.color = '#92400e';
+            return;
+        }
+        const user = this.store.getUser(userId);
+        const bottlesOut = this.store.getUserBottlesOut(userId);
+        if (bottlesOut > 0) {
+            this.userBottlesOutInfo.innerHTML = `<span style="font-size: 1.25rem;">${bottlesOut}</span> bottles currently out with ${user.name}`;
+            this.userBottlesOutInfo.style.background = '#fee2e2';
+            this.userBottlesOutInfo.style.color = '#dc2626';
+        } else {
+            this.userBottlesOutInfo.innerHTML = `No bottles currently out with ${user.name}`;
+            this.userBottlesOutInfo.style.background = '#dcfce7';
+            this.userBottlesOutInfo.style.color = '#16a34a';
+        }
+    }
+
+    async handleReturnSubmit(e) {
+        e.preventDefault();
+        const userId = this.returnUserSelect.value;
+        const date = this.returnDateInput.value;
+        const bottles = parseInt(this.returnBottlesInput.value);
+        const notes = this.returnNotesInput.value.trim();
+
+        if (!userId) {
+            this.showToast('Please select a user', 'error');
+            return;
+        }
+
+        this.showLoading(true);
+        const returnData = { userId, date, bottles, notes };
+
+        try {
+            await this.store.addReturn(returnData);
+            const user = this.store.getUser(userId);
+            this.showToast(`${bottles} bottle(s) returned by ${user.name}!`, 'success');
+            this.closeReturnModal();
+            this.updateDashboard();
+            this.renderReturns();
+        } catch (error) {
+            this.showToast('Error recording return', 'error');
+        } finally {
+            this.showLoading(false);
+        }
+    }
+
+    renderReturns() {
+        const userId = this.returnsUserFilter.value;
+        const monthValue = this.returnsMonthFilter.value;
+        let returns = this.store.returns;
+
+        if (userId) {
+            returns = returns.filter(r => r.userId == userId);
+        }
+        if (monthValue) {
+            const [year, month] = monthValue.split('-').map(Number);
+            returns = returns.filter(r => {
+                const date = new Date(r.date);
+                return date.getFullYear() === year && date.getMonth() === month - 1;
+            });
+        }
+
+        returns = [...returns].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        const totalReturns = returns.reduce((sum, r) => sum + parseInt(r.bottles), 0);
+        this.returnsTotalBottlesEl.textContent = totalReturns;
+        this.todayReturnsEl.textContent = this.store.getTodayReturnCount();
+        this.totalBottlesOutEl.textContent = this.store.getTotalBottlesOut();
+
+        if (returns.length === 0) {
+            this.returnsListEl.innerHTML = '<p class="empty-state">No returns recorded for selected filters</p>';
+            return;
+        }
+
+        // Group returns by date
+        const grouped = {};
+        returns.forEach(r => {
+            if (!grouped[r.date]) { grouped[r.date] = []; }
+            grouped[r.date].push(r);
+        });
+
+        // Build table HTML
+        let tableHtml = `<table class="history-table">
+            <thead><tr><th>Date</th><th>Customer</th><th>Bottles</th><th style="width: 40px;"></th></tr></thead><tbody>`;
+
+        Object.entries(grouped).forEach(([date, items]) => {
+            const dayTotal = items.reduce((sum, r) => sum + parseInt(r.bottles), 0);
+
+            items.forEach((r, index) => {
+                const user = this.store.getUser(r.userId);
+                const userName = user ? user.name : (r.userId.startsWith('temp_') ? 'One-time' : 'Unknown');
+                tableHtml += `<tr>
+                    <td class="date-cell">${index === 0 ? formatDisplayDate(date) : ''}</td>
+                    <td class="customer-cell">${userName}</td>
+                    <td class="bottles-cell" style="color: #22c55e;">+${r.bottles}</td>
+                    <td><button class="action-btn delete" onclick="app.confirmDeleteReturn('${r.id}')" title="Delete" style="width: 28px; height: 28px; font-size: 0.75rem;">🗑️</button></td>
+                </tr>`;
+            });
+
+            tableHtml += `<tr class="day-total-row">
+                <td colspan="2" style="text-align: right;">Day Total:</td>
+                <td class="bottles-cell" style="color: #22c55e;">+${dayTotal}</td>
+                <td></td>
+            </tr>`;
+        });
+
+        tableHtml += '</tbody></table>';
+        this.returnsListEl.innerHTML = tableHtml;
+    }
+
+    async confirmDeleteReturn(id) {
+        if (confirm('Are you sure you want to delete this return record?')) {
+            this.showLoading(true);
+            try {
+                await this.store.deleteReturn(id);
+                this.showToast('Return record deleted!', 'success');
+                this.renderReturns();
+                this.updateDashboard();
+            } catch (error) {
+                this.showToast('Error deleting return', 'error');
+            } finally {
+                this.showLoading(false);
+            }
+        }
+    }
+
+    async handleUserSubmit(e) {
+        e.preventDefault();
+        this.showLoading(true);
+        const userData = { name: this.userNameInput.value.trim(), phone: this.userPhoneInput.value.trim(), address: this.userAddressInput.value.trim(), defaultBottles: parseInt(this.userDefaultBottlesInput.value) || 1, price: parseInt(this.userPriceInput.value) || 20 };
+        try {
+            if (this.editingUserId) { await this.store.updateUser(this.editingUserId, userData); this.showToast('User updated successfully!', 'success'); }
+            else { await this.store.addUser(userData); this.showToast('User added successfully!', 'success'); }
+            this.closeUserModal(); this.renderUsers(); this.populateUserDropdowns(); this.updateDashboard();
+        } catch (error) { this.showToast('Error saving user', 'error'); }
+        finally { this.showLoading(false); }
+    }
+
+    editUser(id) { this.openUserModal(id); }
+
+    async toggleUserActive(id) {
+        const user = this.store.getUser(id);
+        if (!user) return;
+        const newStatus = user.active === false ? true : false;
+        this.showLoading(true);
+        try {
+            await this.store.updateUser(id, { ...user, active: newStatus });
+            this.showToast(`${user.name} ${newStatus ? 'activated' : 'deactivated'}!`, 'success');
+            this.renderUsers();
+            this.updateDashboard();
+        } catch (error) {
+            this.showToast('Error updating user status', 'error');
+        } finally {
+            this.showLoading(false);
+        }
+    }
+
+    async confirmDeleteUser(id) {
+        const user = this.store.getUser(id);
+        if (confirm(`Are you sure you want to delete "${user.name}"?`)) {
+            this.showLoading(true);
+            try { await this.store.deleteUser(id); this.showToast('User deleted successfully!', 'success'); this.renderUsers(); this.populateUserDropdowns(); this.updateDashboard(); }
+            catch (error) { this.showToast('Error deleting user', 'error'); }
+            finally { this.showLoading(false); }
+        }
+    }
+
+    populateUserDropdowns() {
+        const sortedUsers = [...this.store.users].sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+        const usersHtml = sortedUsers.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
+        this.deliveryUserSelect.innerHTML = '<option value="">Choose a user...</option>' + usersHtml;
+        this.historyUserFilter.innerHTML = '<option value="">All Users</option>' + usersHtml;
+        this.returnUserSelect.innerHTML = '<option value="">Choose a user...</option>' + usersHtml;
+        this.returnsUserFilter.innerHTML = '<option value="">All Users</option>' + usersHtml;
+    }
+
+    adjustQuantity(delta) { const current = parseInt(this.bottleCountInput.value) || 1; const newValue = Math.max(1, Math.min(100, current + delta)); this.bottleCountInput.value = newValue; }
+
+    async handleDeliverySubmit(e) {
+        e.preventDefault();
+        const userId = this.deliveryUserSelect.value;
+        const date = this.deliveryDateInput.value;
+        const bottles = parseInt(this.bottleCountInput.value);
+        const price = parseInt(this.deliveryPriceInput.value) || 20;
+        const notes = this.deliveryNotesInput.value.trim();
+        if (!userId) { this.showToast('Please select a user', 'error'); return; }
+        this.showLoading(true);
+        const delivery = { userId, date, bottles, price, notes };
+        try {
+            await this.store.addDelivery(delivery);
+            const user = this.store.getUser(userId);
+            this.showToast(`${bottles} bottle(s) added for ${user.name}!`, 'success');
+            this.deliveryUserSelect.value = ''; this.bottleCountInput.value = 1; this.deliveryPriceInput.value = 20; this.deliveryNotesInput.value = '';
+            this.updateDashboard(); this.renderHistory();
+        } catch (error) { this.showToast('Error adding delivery', 'error'); }
+        finally { this.showLoading(false); }
+    }
+
+    renderHistory() {
+        const userId = this.historyUserFilter.value;
+        const monthValue = this.historyMonthFilter.value;
+        let deliveries = this.store.deliveries;
+        if (userId) { deliveries = deliveries.filter(d => d.userId == userId); }
+        if (monthValue) { const [year, month] = monthValue.split('-').map(Number); deliveries = deliveries.filter(d => { const date = new Date(d.date); return date.getFullYear() === year && date.getMonth() === month - 1; }); }
+        deliveries = [...deliveries].sort((a, b) => new Date(b.date) - new Date(a.date));
+        const totalBottles = deliveries.reduce((sum, d) => sum + parseInt(d.bottles), 0);
+        const totalAmount = deliveries.reduce((sum, d) => {
+            const price = d.price || (this.store.getUser(d.userId)?.price || 20);
+            return sum + (parseInt(d.bottles) * price);
+        }, 0);
+        this.historyTotalBottlesEl.textContent = totalBottles;
+        this.historyTotalAmountEl.textContent = `₹${totalAmount}`;
+        if (deliveries.length === 0) { this.historyListEl.innerHTML = '<p class="empty-state">No delivery history for selected filters</p>'; this.historyTotalAmountEl.textContent = '₹0'; return; }
+
+        // Group deliveries by date
+        const grouped = {};
+        deliveries.forEach(d => { if (!grouped[d.date]) { grouped[d.date] = []; } grouped[d.date].push(d); });
+
+        // Build table HTML
+        let tableHtml = `<table class="history-table">
+            <thead><tr><th>Date</th><th>Customer</th><th>Bottles</th><th>Amount</th></tr></thead><tbody>`;
+
+        Object.entries(grouped).forEach(([date, items]) => {
+            const dayTotal = items.reduce((sum, d) => sum + parseInt(d.bottles), 0);
+            const dayAmount = items.reduce((sum, d) => {
+                const price = d.price || (this.store.getUser(d.userId)?.price || 20);
+                return sum + (parseInt(d.bottles) * price);
+            }, 0);
+
+            // Add each delivery row
+            items.forEach((d, index) => {
+                const user = this.store.getUser(d.userId);
+                const userName = user ? user.name : (d.userId.startsWith('temp_') ? 'One-time' : 'Unknown');
+                const price = d.price || (user?.price || 20);
+                const amount = parseInt(d.bottles) * price;
+                tableHtml += `<tr>
+                    <td class="date-cell">${index === 0 ? formatDisplayDate(date) : ''}</td>
+                    <td class="customer-cell">${userName}</td>
+                    <td class="bottles-cell">${d.bottles}</td>
+                    <td class="amount-cell">₹${amount}</td>
+                </tr>`;
+            });
+
+            // Add day total row
+            tableHtml += `<tr class="day-total-row">
+                <td colspan="2" style="text-align: right;">Day Total:</td>
+                <td class="bottles-cell">${dayTotal}</td>
+                <td class="amount-cell">₹${dayAmount}</td>
+            </tr>`;
+        });
+
+        tableHtml += '</tbody></table>';
+        this.historyListEl.innerHTML = tableHtml;
+    }
+
+    async shareBill() {
+        const userId = this.historyUserFilter.value;
+        const monthValue = this.historyMonthFilter.value;
+
+        if (!monthValue) {
+            this.showToast('Please select a month first', 'error');
+            return;
+        }
+
+        let deliveries = this.store.deliveries;
+        const [year, month] = monthValue.split('-').map(Number);
+        const monthName = new Date(year, month - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+        // Filter by month
+        deliveries = deliveries.filter(d => {
+            const date = new Date(d.date);
+            return date.getFullYear() === year && date.getMonth() === month - 1;
+        });
+
+        // Filter by user if selected
+        if (userId) {
+            deliveries = deliveries.filter(d => d.userId == userId);
+        }
+
+        if (deliveries.length === 0) {
+            this.showToast('No deliveries found', 'error');
+            return;
+        }
+
+        // Sort by date
+        deliveries = [...deliveries].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        // Get user info for single user bill
+        const selectedUser = userId ? this.store.getUser(userId) : null;
+        const billTitle = selectedUser ? `Bill for ${selectedUser.name}` : 'Monthly Bill - All Customers';
+        const fileName = selectedUser
+            ? `Bill_${selectedUser.name.replace(/\s+/g, '_')}_${monthName.replace(/\s+/g, '_')}.pdf`
+            : `Bill_All_Customers_${monthName.replace(/\s+/g, '_')}.pdf`;
+
+        // Calculate totals
+        const totalBottles = deliveries.reduce((sum, d) => sum + parseInt(d.bottles), 0);
+        const totalAmount = deliveries.reduce((sum, d) => {
+            const price = d.price || (this.store.getUser(d.userId)?.price || 20);
+            return sum + (parseInt(d.bottles) * price);
+        }, 0);
+
+        // Group by date for the bill
+        const grouped = {};
+        deliveries.forEach(d => {
+            if (!grouped[d.date]) { grouped[d.date] = []; }
+            grouped[d.date].push(d);
+        });
+
+        // Build bill rows HTML
+        let billRows = '';
+        Object.entries(grouped).forEach(([date, items]) => {
+            items.forEach(d => {
+                const user = this.store.getUser(d.userId);
+                const userName = user ? user.name : 'One-time';
+                const price = d.price || (user?.price || 20);
+                const amount = parseInt(d.bottles) * price;
+                const displayDate = new Date(date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+                billRows += `
+                    <tr>
+                        <td>${displayDate}</td>
+                        ${!userId ? `<td>${userName}</td>` : ''}
+                        <td style="text-align: center;">${d.bottles}</td>
+                        <td style="text-align: right;">₹${price}</td>
+                        <td style="text-align: right;">₹${amount}</td>
+                    </tr>
+                `;
+            });
+        });
+
+        // Create hidden container for PDF generation
+        const container = document.createElement('div');
+        container.style.cssText = 'position: absolute; left: -9999px; top: 0; width: 595px; background: white;';
+        container.innerHTML = `
+            <div style="font-family: Arial, sans-serif; padding: 20px;">
+                <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #0ea5e9; padding-bottom: 15px;">
+                    <h1 style="color: #0ea5e9; font-size: 24px; margin: 0 0 5px 0;">Water Supply</h1>
+                    <h2 style="font-size: 18px; color: #333; margin: 0 0 5px 0;">${billTitle}</h2>
+                    <p style="color: #666; font-size: 14px; margin: 0;">${monthName}</p>
+                </div>
+
+                ${selectedUser ? `
+                <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <p style="margin: 5px 0;"><strong>Customer:</strong> ${selectedUser.name}</p>
+                    <p style="margin: 5px 0;"><strong>Phone:</strong> ${selectedUser.phone}</p>
+                    ${selectedUser.address ? `<p style="margin: 5px 0;"><strong>Address:</strong> ${selectedUser.address}</p>` : ''}
+                    <p style="margin: 5px 0;"><strong>Rate:</strong> ₹${selectedUser.price || 20} per bottle</p>
+                </div>
+                ` : ''}
+
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                    <thead>
+                        <tr>
+                            <th style="background: #0ea5e9; color: white; padding: 10px 8px; text-align: left; font-size: 14px;">Date</th>
+                            ${!userId ? '<th style="background: #0ea5e9; color: white; padding: 10px 8px; text-align: left; font-size: 14px;">Customer</th>' : ''}
+                            <th style="background: #0ea5e9; color: white; padding: 10px 8px; text-align: center; font-size: 14px;">Bottles</th>
+                            <th style="background: #0ea5e9; color: white; padding: 10px 8px; text-align: right; font-size: 14px;">Rate</th>
+                            <th style="background: #0ea5e9; color: white; padding: 10px 8px; text-align: right; font-size: 14px;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${billRows}
+                        <tr style="background: #0ea5e9 !important; color: white; font-weight: bold;">
+                            <td colspan="${userId ? 2 : 3}" style="padding: 12px 8px; font-size: 15px; text-align: right; border: none;">TOTAL:</td>
+                            <td style="padding: 12px 8px; font-size: 15px; text-align: center; border: none; color: white;">${totalBottles}</td>
+                            <td style="padding: 12px 8px; font-size: 15px; text-align: right; border: none; color: white;">₹${totalAmount}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div style="text-align: center; margin-top: 30px; padding-top: 15px; border-top: 1px solid #e2e8f0; color: #666; font-size: 12px;">
+                    <p>Generated on ${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+                    <p style="margin-top: 5px;">Thank you for your business!</p>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(container);
+
+        this.showToast('Generating PDF...', 'success');
+
+        try {
+            // Load html2canvas and jsPDF dynamically
+            if (!window.html2canvas) {
+                await this.loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+            }
+            if (!window.jspdf) {
+                await this.loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+            }
+
+            const canvas = await html2canvas(container, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+            document.body.removeChild(container);
+
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const imgWidth = 210; // A4 width in mm
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight);
+
+            const pdfBlob = pdf.output('blob');
+            const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
+
+            // Check if Web Share API is available and can share files
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+                await navigator.share({
+                    files: [pdfFile],
+                    title: billTitle,
+                    text: `Water Supply Bill - ${monthName}`
+                });
+                this.showToast('Bill shared successfully!', 'success');
+            } else {
+                // Fallback: Download the PDF
+                const url = URL.createObjectURL(pdfBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                a.click();
+                URL.revokeObjectURL(url);
+                this.showToast('PDF downloaded!', 'success');
+            }
+        } catch (error) {
+            document.body.removeChild(container);
+            console.error('PDF generation error:', error);
+            this.showToast('Error generating PDF', 'error');
+        }
+    }
+
+    loadScript(src) {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+
+    showToast(message, type = 'success') { this.toastMessage.textContent = message; this.toast.className = `toast show ${type}`; setTimeout(() => { this.toast.classList.remove('show'); }, 3000); }
+}
+
+const app = new App();
+    </script>
+</body>
+</html>
