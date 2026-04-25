@@ -173,12 +173,12 @@ export function HistoryTab({ users, deliveries, showToast }: HistoryTabProps) {
     try {
       const html2canvas = (await import("html2canvas")).default;
       const { jsPDF } = await import("jspdf");
-      const canvas = await html2canvas(container, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+      const canvas = await html2canvas(container, { scale: 1.5, useCORS: true, backgroundColor: "#ffffff" });
       document.body.removeChild(container);
       const pdf = new jsPDF("p", "mm", "a4");
       const imgWidth = 210;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, imgWidth, imgHeight);
+      pdf.addImage(canvas.toDataURL("image/jpeg", 0.75), "JPEG", 0, 0, imgWidth, imgHeight);
       const pdfBlob = pdf.output("blob");
       return { pdfBlob, fileName, billTitle, monthName };
     } catch (err) {
