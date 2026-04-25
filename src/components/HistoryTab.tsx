@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
-import { Share2 } from "lucide-react";
+import { Share2, Download } from "lucide-react";
 import type { User, Delivery } from "../types";
 import { formatDisplayDate, findUser } from "../store";
 
@@ -46,7 +46,7 @@ export function HistoryTab({ users, deliveries, showToast }: HistoryTabProps) {
     return map;
   }, [filtered]);
 
-  const shareBill = useCallback(async () => {
+  const generatePdf = useCallback(async () => {
     if (!filterMonth) {
       showToast("Please select a month first", "error");
       return;
@@ -78,57 +78,93 @@ export function HistoryTab({ users, deliveries, showToast }: HistoryTabProps) {
     }
 
     let billRows = "";
+    let rowIdx = 0;
     for (const [date, items] of Object.entries(billGrouped)) {
       for (const d of items) {
         const user = findUser(users, d.userId);
         const price = d.price || (user?.price ?? 20);
         const amount = Number(d.bottles) * price;
         const displayDate = new Date(date).toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
-        billRows += `<tr>
-          <td>${displayDate}</td>
-          ${!filterUser ? `<td>${user?.name ?? "One-time"}</td>` : ""}
-          <td style="text-align:center;">${d.bottles}</td>
-          <td style="text-align:right;">₹${price}</td>
-          <td style="text-align:right;">₹${amount}</td>
+        const bgColor = rowIdx % 2 === 0 ? "#ffffff" : "#f8fafc";
+        billRows += `<tr style="background:${bgColor};">
+          <td style="padding:10px 12px;font-size:13px;color:#334155;border-bottom:1px solid #f1f5f9;">${displayDate}</td>
+          ${!filterUser ? `<td style="padding:10px 12px;font-size:13px;color:#334155;border-bottom:1px solid #f1f5f9;">${user?.name ?? "One-time"}</td>` : ""}
+          <td style="padding:10px 12px;font-size:13px;color:#334155;text-align:center;border-bottom:1px solid #f1f5f9;">${d.bottles}</td>
+          <td style="padding:10px 12px;font-size:13px;color:#334155;text-align:right;border-bottom:1px solid #f1f5f9;">₹${price}</td>
+          <td style="padding:10px 12px;font-size:13px;color:#1e293b;text-align:right;font-weight:600;border-bottom:1px solid #f1f5f9;">₹${amount}</td>
         </tr>`;
+        rowIdx++;
       }
     }
+
+    const invoiceNo = `INV-${filterMonth!.replace("-", "")}-${Date.now().toString().slice(-4)}`;
+    const generatedDate = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" });
 
     const container = document.createElement("div");
     container.style.cssText = "position:absolute;left:-9999px;top:0;width:595px;background:white;";
     container.innerHTML = `
-      <div style="font-family:Arial,sans-serif;padding:20px;">
-        <div style="text-align:center;margin-bottom:20px;border-bottom:2px solid #0ea5e9;padding-bottom:15px;">
-          <h1 style="color:#0ea5e9;font-size:24px;margin:0 0 5px 0;">Water Supply</h1>
-          <h2 style="font-size:18px;color:#333;margin:0 0 5px 0;">${billTitle}</h2>
-          <p style="color:#666;font-size:14px;margin:0;">${monthName}</p>
+      <div style="font-family:'Segoe UI',Arial,sans-serif;padding:32px;color:#1e293b;">
+        <!-- Header -->
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;padding-bottom:20px;border-bottom:3px solid #0ea5e9;">
+          <div>
+            <h1 style="font-size:28px;font-weight:800;margin:0;color:#0ea5e9;letter-spacing:-0.5px;">💧 Water Supply</h1>
+            <p style="color:#64748b;font-size:13px;margin:4px 0 0 0;">Quality water delivery service</p>
+          </div>
+          <div style="text-align:right;">
+            <p style="font-size:22px;font-weight:700;color:#1e293b;margin:0;">INVOICE</p>
+            <p style="color:#64748b;font-size:12px;margin:4px 0 0 0;">${invoiceNo}</p>
+            <p style="color:#64748b;font-size:12px;margin:2px 0 0 0;">${generatedDate}</p>
+          </div>
         </div>
-        ${selectedUser ? `<div style="background:#f8fafc;padding:15px;border-radius:8px;margin-bottom:20px;">
-          <p style="margin:5px 0;"><strong>Customer:</strong> ${selectedUser.name}</p>
-          <p style="margin:5px 0;"><strong>Phone:</strong> ${selectedUser.phone}</p>
-          ${selectedUser.address ? `<p style="margin:5px 0;"><strong>Address:</strong> ${selectedUser.address}</p>` : ""}
-          <p style="margin:5px 0;"><strong>Rate:</strong> ₹${selectedUser.price ?? 20} per bottle</p>
-        </div>` : ""}
-        <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
+
+        <!-- Bill Info -->
+        <div style="display:flex;justify-content:space-between;margin-bottom:24px;">
+          <div style="flex:1;">
+            <p style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;margin:0 0 6px 0;font-weight:600;">Bill To</p>
+            ${selectedUser ? `
+              <p style="font-size:16px;font-weight:700;margin:0 0 4px 0;">${selectedUser.name}</p>
+              <p style="color:#64748b;font-size:13px;margin:2px 0;">${selectedUser.phone}</p>
+              ${selectedUser.address ? `<p style="color:#64748b;font-size:13px;margin:2px 0;">${selectedUser.address}</p>` : ""}
+            ` : `<p style="font-size:16px;font-weight:700;margin:0;">All Customers</p>`}
+          </div>
+          <div style="text-align:right;">
+            <p style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;margin:0 0 6px 0;font-weight:600;">Period</p>
+            <p style="font-size:16px;font-weight:700;margin:0;">${monthName}</p>
+            ${selectedUser ? `<p style="color:#64748b;font-size:13px;margin:4px 0 0 0;">Rate: ₹${selectedUser.price ?? 20}/bottle</p>` : ""}
+          </div>
+        </div>
+
+        <!-- Table -->
+        <table style="width:100%;border-collapse:separate;border-spacing:0;margin-bottom:24px;border-radius:8px;overflow:hidden;border:1px solid #e2e8f0;">
           <thead><tr>
-            <th style="background:#0ea5e9;color:white;padding:10px 8px;text-align:left;font-size:14px;">Date</th>
-            ${!filterUser ? '<th style="background:#0ea5e9;color:white;padding:10px 8px;text-align:left;font-size:14px;">Customer</th>' : ""}
-            <th style="background:#0ea5e9;color:white;padding:10px 8px;text-align:center;font-size:14px;">Bottles</th>
-            <th style="background:#0ea5e9;color:white;padding:10px 8px;text-align:right;font-size:14px;">Rate</th>
-            <th style="background:#0ea5e9;color:white;padding:10px 8px;text-align:right;font-size:14px;">Amount</th>
+            <th style="background:#f1f5f9;padding:12px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:#64748b;font-weight:600;border-bottom:2px solid #e2e8f0;">Date</th>
+            ${!filterUser ? '<th style="background:#f1f5f9;padding:12px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:#64748b;font-weight:600;border-bottom:2px solid #e2e8f0;">Customer</th>' : ""}
+            <th style="background:#f1f5f9;padding:12px 12px;text-align:center;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:#64748b;font-weight:600;border-bottom:2px solid #e2e8f0;">Qty</th>
+            <th style="background:#f1f5f9;padding:12px 12px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:#64748b;font-weight:600;border-bottom:2px solid #e2e8f0;">Rate</th>
+            <th style="background:#f1f5f9;padding:12px 12px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:#64748b;font-weight:600;border-bottom:2px solid #e2e8f0;">Amount</th>
           </tr></thead>
           <tbody>
             ${billRows}
-            <tr style="background:#0ea5e9!important;color:white;font-weight:bold;">
-              <td colspan="${filterUser ? 2 : 3}" style="padding:12px 8px;font-size:15px;text-align:right;border:none;">TOTAL:</td>
-              <td style="padding:12px 8px;font-size:15px;text-align:center;border:none;color:white;">${totalBottles}</td>
-              <td style="padding:12px 8px;font-size:15px;text-align:right;border:none;color:white;">₹${totalAmount}</td>
-            </tr>
           </tbody>
         </table>
-        <div style="text-align:center;margin-top:30px;padding-top:15px;border-top:1px solid #e2e8f0;color:#666;font-size:12px;">
-          <p>Generated on ${new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })}</p>
-          <p style="margin-top:5px;">Thank you for your business!</p>
+
+        <!-- Summary -->
+        <div style="display:flex;justify-content:flex-end;">
+          <div style="width:220px;">
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e2e8f0;">
+              <span style="color:#64748b;font-size:14px;">Total Bottles</span>
+              <span style="font-weight:600;font-size:14px;">${totalBottles}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:12px 0;margin-top:4px;background:#0ea5e9;border-radius:8px;padding:12px 16px;">
+              <span style="color:white;font-size:15px;font-weight:600;">Total Due</span>
+              <span style="color:white;font-size:18px;font-weight:800;">₹${totalAmount.toLocaleString("en-IN")}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="text-align:center;margin-top:36px;padding-top:16px;border-top:1px solid #e2e8f0;">
+          <p style="color:#94a3b8;font-size:11px;margin:0;">Thank you for your business!</p>
         </div>
       </div>`;
     document.body.appendChild(container);
@@ -144,103 +180,125 @@ export function HistoryTab({ users, deliveries, showToast }: HistoryTabProps) {
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, imgWidth, imgHeight);
       const pdfBlob = pdf.output("blob");
-      const pdfFile = new File([pdfBlob], fileName, { type: "application/pdf" });
-      if (navigator.share && navigator.canShare?.({ files: [pdfFile] })) {
-        await navigator.share({ files: [pdfFile], title: billTitle, text: `Water Supply Bill - ${monthName}` });
-        showToast("Bill shared successfully!", "success");
-      } else {
-        const url = URL.createObjectURL(pdfBlob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = fileName;
-        a.click();
-        URL.revokeObjectURL(url);
-        showToast("PDF downloaded!", "success");
-      }
+      return { pdfBlob, fileName, billTitle, monthName };
     } catch (err) {
       console.error("PDF generation error:", err);
       if (container.parentNode) document.body.removeChild(container);
       showToast("Error generating PDF", "error");
+      return null;
     }
   }, [filterMonth, filterUser, filtered, users, totalBottles, totalAmount, showToast]);
+
+  const downloadBill = useCallback(async () => {
+    const result = await generatePdf();
+    if (!result) return;
+    const url = URL.createObjectURL(result.pdfBlob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = result.fileName;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("PDF downloaded!", "success");
+  }, [generatePdf, showToast]);
+
+  const shareBill = useCallback(async () => {
+    const result = await generatePdf();
+    if (!result) return;
+    const pdfFile = new File([result.pdfBlob], result.fileName, { type: "application/pdf" });
+    if (navigator.share && navigator.canShare?.({ files: [pdfFile] })) {
+      await navigator.share({ files: [pdfFile], title: result.billTitle, text: `Water Supply Bill - ${result.monthName}` });
+      showToast("Bill shared successfully!", "success");
+    } else {
+      const url = URL.createObjectURL(result.pdfBlob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = result.fileName;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast("PDF downloaded!", "success");
+    }
+  }, [generatePdf, showToast]);
 
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">Delivery History</h2>
-        <button
-          onClick={shareBill}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-br from-violet-500 to-violet-600 text-white text-xs font-medium hover:-translate-y-0.5 hover:shadow-lg transition-all"
-        >
-          <Share2 size={14} /> Share Bill
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={downloadBill}
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 text-white text-xs font-medium hover:-translate-y-0.5 hover:shadow-lg transition-all"
+          >
+            <Download size={14} /> Download
+          </button>
+          <button
+            onClick={shareBill}
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 text-white text-xs font-medium hover:-translate-y-0.5 hover:shadow-lg transition-all"
+          >
+            <Share2 size={14} /> Share
+          </button>
+        </div>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="bg-white rounded-xl p-4 shadow-sm">
+          <p className="text-xs text-slate-400 uppercase tracking-wide font-medium">Total Bottles</p>
+          <p className="text-2xl font-bold text-sky-500 mt-1">{totalBottles}</p>
+        </div>
+        <div className="bg-white rounded-xl p-4 shadow-sm">
+          <p className="text-xs text-slate-400 uppercase tracking-wide font-medium">Total Amount</p>
+          <p className="text-2xl font-bold text-emerald-500 mt-1">₹{totalAmount.toLocaleString("en-IN")}</p>
+        </div>
       </div>
 
       <div className="flex gap-3 mb-4">
-        <select value={filterUser} onChange={(e) => setFilterUser(e.target.value)} className="flex-1 p-2.5 border border-slate-200 rounded-lg text-base bg-white">
+        <select value={filterUser} onChange={(e) => setFilterUser(e.target.value)} className="flex-1 p-2.5 border border-slate-200 rounded-xl text-base bg-white focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
           <option value="">All Users</option>
           {sorted.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
         </select>
-        <input type="month" value={filterMonth} onChange={(e) => setFilterMonth(e.target.value)} className="flex-1 p-2.5 border border-slate-200 rounded-lg text-base bg-white" />
+        <input type="month" value={filterMonth} onChange={(e) => setFilterMonth(e.target.value)} className="flex-1 p-2.5 border border-slate-200 rounded-xl text-base bg-white focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100" />
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-center py-8 text-slate-500 text-sm">No delivery history for selected filters</p>
+        <p className="text-center py-12 text-slate-400 text-sm">No deliveries found for selected filters</p>
       ) : (
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-4">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="bg-gradient-to-r from-sky-500 to-sky-600 text-white">
-                <th className="p-3 text-left text-xs font-semibold">Date</th>
-                <th className="p-3 text-left text-xs font-semibold">Customer</th>
-                <th className="p-3 text-center text-xs font-semibold">Bottles</th>
-                <th className="p-3 text-right text-xs font-semibold">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(grouped).map(([dateKey, items]) => {
-                const dayTotal = items.reduce((s, d) => s + Number(d.bottles), 0);
-                const dayAmount = items.reduce((s, d) => {
-                  const price = d.price || (findUser(users, d.userId)?.price ?? 20);
-                  return s + Number(d.bottles) * price;
-                }, 0);
-                return items.map((d, idx) => {
-                  const user = findUser(users, d.userId);
-                  const price = d.price || (user?.price ?? 20);
-                  const amount = Number(d.bottles) * price;
-                  return (
-                    <tr key={d.id} className="border-b border-slate-100">
-                      <td className="p-2.5 text-sm font-semibold text-sky-500 whitespace-nowrap">
-                        {idx === 0 ? formatDisplayDate(dateKey) : ""}
-                      </td>
-                      <td className="p-2.5 text-sm font-medium">{user?.name ?? "Unknown"}</td>
-                      <td className="p-2.5 text-sm text-center font-semibold">{d.bottles}</td>
-                      <td className="p-2.5 text-sm text-right font-semibold text-emerald-500">₹{amount}</td>
-                    </tr>
-                  );
-                }).concat(
-                  <tr key={`total-${dateKey}`} className="bg-slate-50 border-t-2 border-sky-500">
-                    <td colSpan={2} className="p-2.5 text-sm font-bold text-right">Day Total:</td>
-                    <td className="p-2.5 text-sm text-center font-bold">{dayTotal}</td>
-                    <td className="p-2.5 text-sm text-right font-bold text-emerald-500">₹{dayAmount}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div className="space-y-4">
+          {Object.entries(grouped).map(([dateKey, items]) => {
+            const dayTotal = items.reduce((s, d) => s + Number(d.bottles), 0);
+            const dayAmount = items.reduce((s, d) => {
+              const price = d.price || (findUser(users, d.userId)?.price ?? 20);
+              return s + Number(d.bottles) * price;
+            }, 0);
+            return (
+              <div key={dateKey} className="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div className="flex justify-between items-center px-4 py-2.5 bg-slate-50 border-b border-slate-100">
+                  <span className="text-sm font-semibold text-slate-700">{formatDisplayDate(dateKey)}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-slate-400">{dayTotal} bottles</span>
+                    <span className="text-sm font-bold text-emerald-500">₹{dayAmount.toLocaleString("en-IN")}</span>
+                  </div>
+                </div>
+                <div className="divide-y divide-slate-50">
+                  {items.map((d) => {
+                    const user = findUser(users, d.userId);
+                    const price = d.price || (user?.price ?? 20);
+                    const amount = Number(d.bottles) * price;
+                    return (
+                      <div key={d.id} className="flex items-center justify-between px-4 py-3">
+                        <div>
+                          <p className="text-sm font-medium text-slate-800">{user?.name ?? "Unknown"}</p>
+                          <p className="text-xs text-slate-400 mt-0.5">{d.bottles} × ₹{price}</p>
+                        </div>
+                        <span className="text-sm font-semibold text-emerald-500">₹{amount.toLocaleString("en-IN")}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
-
-      <div className="bg-white rounded-xl p-4 shadow-sm space-y-2">
-        <div className="flex justify-between items-center">
-          <span className="text-slate-500">Total Bottles:</span>
-          <strong className="text-xl text-sky-500">{totalBottles}</strong>
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="text-slate-500">Total Amount:</span>
-          <strong className="text-xl text-emerald-500">₹{totalAmount}</strong>
-        </div>
-      </div>
     </div>
   );
 }
