@@ -42,6 +42,7 @@ export function Dashboard({
   const [bulkAddress, setBulkAddress] = useState("");
   const [bulkBottles, setBulkBottles] = useState(5);
   const [bulkPrice, setBulkPrice] = useState(20);
+  const [bulkDate, setBulkDate] = useState(formatDate(new Date()));
   const [bulkNotes, setBulkNotes] = useState("");
   const [pendingInputs, setPendingInputs] = useState<
     Record<string, { deliver: number; ret: number }>
@@ -128,7 +129,7 @@ export function Dashboard({
 
     const d = addDelivery(deliveries, {
       userId: newUser.id,
-      date: today,
+      date: bulkDate,
       bottles: bulkBottles,
       price: bulkPrice,
       notes: bulkNotes || "Bulk order",
@@ -139,6 +140,7 @@ export function Dashboard({
     setBulkName("");
     setBulkPhone("");
     setBulkAddress("");
+    setBulkDate(formatDate(new Date()));
     setBulkBottles(5);
     setBulkPrice(20);
     setBulkNotes("");
@@ -292,6 +294,10 @@ export function Dashboard({
             <div>
               <label className="block text-sm font-medium mb-1">Address (Optional)</label>
               <textarea value={bulkAddress} onChange={(e) => setBulkAddress(e.target.value)} placeholder="Enter address" className="w-full p-3 border border-slate-200 rounded-xl text-base min-h-[80px] resize-y focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Delivery Date *</label>
+              <input type="date" required value={bulkDate} onChange={(e) => setBulkDate(e.target.value)} className="w-full p-3 border border-slate-200 rounded-xl text-base focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Number of Bottles *</label>
