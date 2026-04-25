@@ -86,7 +86,7 @@ export function addUser(
   };
   const updated = [...users, user];
   saveLocal("waterApp_users", updated);
-  if (isOnline) syncToCloud("addUser", { data: userData });
+  if (isOnline) syncToCloud("addUser", { data: user });
   return user;
 }
 
@@ -125,7 +125,7 @@ export function addDelivery(
   };
   const updated = [...deliveries, delivery];
   saveLocal("waterApp_deliveries", updated);
-  if (isOnline) syncToCloud("addDelivery", { data });
+  if (isOnline) syncToCloud("addDelivery", { data: delivery });
   return delivery;
 }
 
@@ -152,7 +152,7 @@ export function addReturn(
   };
   const updated = [...returns, ret];
   saveLocal("waterApp_returns", updated);
-  if (isOnline) syncToCloud("addReturn", { data });
+  if (isOnline) syncToCloud("addReturn", { data: ret });
   return ret;
 }
 

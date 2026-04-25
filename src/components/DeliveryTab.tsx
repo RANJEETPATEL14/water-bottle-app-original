@@ -86,14 +86,7 @@ export function DeliveryTab({
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Price per Bottle (₹)</label>
-            <input
-              type="number"
-              value={price}
-              onChange={(e) => setPrice(parseInt(e.target.value) || 20)}
-              min={1}
-              max={1000}
-              className="w-full p-3 border border-slate-200 rounded-xl text-base [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
-            />
+            <QuantitySelector value={price} onChange={setPrice} min={1} max={1000} />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Notes (Optional)</label>
