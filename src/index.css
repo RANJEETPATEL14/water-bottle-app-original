@@ -28,12 +28,25 @@
   }
 }
 
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
 @utility animate-fade-in {
   animation: fade-in 0.2s ease;
 }
 
 @utility animate-slide-up {
   animation: slide-up 0.3s ease;
+}
+
+@utility animate-slide-in-left {
+  animation: slide-in-left 0.25s ease;
 }
 
 body {
