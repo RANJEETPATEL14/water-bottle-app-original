@@ -15,6 +15,8 @@ import type {
   Group,
   Payment,
   Expense,
+  Employee,
+  AppEvent,
   Agency,
 } from "./types";
 import * as store from "./store";
@@ -34,11 +36,16 @@ export type Route =
   | { name: "payment"; customerId?: string }
   | { name: "payments" }
   | { name: "delivery"; customerId?: string }
+  | { name: "deliveryBrowse" }
+  | { name: "openingDelivery"; customerId?: string }
   | { name: "deliveries" }
   | { name: "monthly"; customerId?: string }
   | { name: "inventory" }
   | { name: "expenses" }
   | { name: "invoices" }
+  | { name: "invoiceDetail"; customerId: string; year: number; month: number }
+  | { name: "employees" }
+  | { name: "events" }
   | { name: "agency" }
   | { name: "messages" }
   | { name: "reports" }
@@ -56,6 +63,8 @@ interface AppState {
   groups: Group[];
   payments: Payment[];
   expenses: Expense[];
+  employees: Employee[];
+  events: AppEvent[];
   agency: Agency;
 
   // navigation
@@ -87,6 +96,10 @@ interface AppState {
   deletePayment: (id: string) => void;
   addExpense: (data: Omit<Expense, "id" | "createdAt">) => void;
   deleteExpense: (id: string) => void;
+  addEmployee: (data: Omit<Employee, "id" | "createdAt">) => void;
+  deleteEmployee: (id: string) => void;
+  addEvent: (data: Omit<AppEvent, "id" | "createdAt">) => void;
+  deleteEvent: (id: string) => void;
   saveAgency: (agency: Agency) => void;
 }
 
@@ -108,6 +121,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [groups, setGroups] = useState<Group[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [events, setEvents] = useState<AppEvent[]>([]);
   const [agency, setAgency] = useState<Agency>(store.defaultAgency);
 
   const [stack, setStack] = useState<Route[]>(
@@ -118,7 +133,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       else if (h === "products") initial.push({ name: "products" });
       else if (h === "groups") initial.push({ name: "groups" });
       else if (h === "delivery") initial.push({ name: "delivery" });
+      else if (h === "deliveryBrowse") initial.push({ name: "deliveryBrowse" });
       else if (h === "payment") initial.push({ name: "payment" });
+      else if (h === "invoices") initial.push({ name: "invoices" });
+      else if (h === "employees") initial.push({ name: "employees" });
+      else if (h === "events") initial.push({ name: "events" });
       return initial;
     })(),
   );
@@ -132,6 +151,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setGroups(data.groups);
     setPayments(data.payments);
     setExpenses(data.expenses);
+    setEmployees(data.employees);
+    setEvents(data.events);
     setAgency(data.agency);
     setIsOnline(data.isOnline);
   }, []);
@@ -204,9 +225,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setExpenses(store.addExpense(expenses, data, isOnline)),
       deleteExpense: (id: string) =>
         setExpenses(store.deleteExpense(expenses, id, isOnline)),
+      addEmployee: (data: Omit<Employee, "id" | "createdAt">) =>
+        setEmployees(store.addEmployee(employees, data, isOnline)),
+      deleteEmployee: (id: string) =>
+        setEmployees(store.deleteEmployee(employees, id, isOnline)),
+      addEvent: (data: Omit<AppEvent, "id" | "createdAt">) =>
+        setEvents(store.addEvent(events, data, isOnline)),
+      deleteEvent: (id: string) =>
+        setEvents(store.deleteEvent(events, id, isOnline)),
       saveAgency: (a: Agency) => setAgency(store.saveAgency(a, isOnline)),
     }),
-    [customers, deliveries, returns, products, groups, payments, expenses, isOnline],
+    [customers, deliveries, returns, products, groups, payments, expenses, employees, events, isOnline],
   );
 
   const value: AppState = {
@@ -219,6 +248,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     groups,
     payments,
     expenses,
+    employees,
+    events,
     agency,
     route: stack[stack.length - 1]!,
     stack,

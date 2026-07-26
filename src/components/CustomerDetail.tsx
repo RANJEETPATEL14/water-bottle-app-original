@@ -36,7 +36,7 @@ export function CustomerDetail({ id }: { id: string }) {
     { icon: UserCog, title: "Profile", sub: "Update customer basic details", action: () => navigate({ name: "customerForm", id }) },
     { icon: Package, title: "Customer Products", sub: "Assign specific product to customer with specific rate.", action: () => showToast(`${customer.name} rate: ${money(customer.price)}/jar`, "success") },
     { icon: HandCoins, title: "Opening Amount", sub: "Add opening balance details for this customer", action: () => showToast(`Opening amount: ${money(customer.openingDue)}`, "success") },
-    { icon: Truck, title: "Opening Delivery", sub: "Add previous delivered products for which you need to receive empty container.", action: () => navigate({ name: "delivery", customerId: id }) },
+    { icon: Truck, title: "Opening Delivery", sub: "Add previous delivered products for which you need to receive empty container.", action: () => navigate({ name: "openingDelivery", customerId: id }) },
     { icon: ShieldCheck, title: "Security Deposit", sub: "Add security deposit for this customer", action: () => showToast(`Security deposit: ${money(customer.securityDeposit)}`, "success") },
     { icon: FileText, title: "Customer Invoice Preference", sub: "Set customer invoice preference.", action: () => navigate({ name: "invoices" }) },
   ];

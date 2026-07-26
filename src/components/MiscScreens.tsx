@@ -1,44 +1,8 @@
 import { useState } from "react";
-import { FileText, TrendingUp, TrendingDown, Boxes, Users as UsersIcon } from "lucide-react";
+import { TrendingUp, TrendingDown, Boxes, Users as UsersIcon } from "lucide-react";
 import { useApp } from "../context";
-import { getCustomerDues, getTotalDue, getTotalBottlesOut, money } from "../store";
+import { getTotalDue, getTotalBottlesOut, money } from "../store";
 import { ScreenHeader, EmptyState } from "./ui";
-
-/* ----------------------------- Invoices ---------------------------------- */
-
-export function InvoicesScreen() {
-  const { customers, deliveries, returns, payments, showToast } = useApp();
-  const withDues = customers
-    .map((c) => ({ c, dues: getCustomerDues(c, deliveries, returns, payments) }))
-    .filter((x) => x.dues.totalDue > 0)
-    .sort((a, b) => b.dues.totalDue - a.dues.totalDue);
-
-  return (
-    <div className="pb-8">
-      <ScreenHeader title="Invoices" />
-      <div className="p-4 space-y-3">
-        {withDues.length === 0 ? (
-          <EmptyState message="No outstanding invoices. Everyone is settled up!" />
-        ) : (
-          withDues.map(({ c, dues }) => (
-            <button
-              key={c.id}
-              onClick={() => showToast(`Invoice for ${c.name}: ${money(dues.totalDue)} due`, "success")}
-              className="w-full text-left bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3"
-            >
-              <FileText size={22} className="text-sky-500 shrink-0" />
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-slate-800 truncate">{c.name}</h3>
-                <p className="text-xs text-slate-400">{c.phone}</p>
-              </div>
-              <span className="font-bold text-red-500">{money(dues.totalDue)}</span>
-            </button>
-          ))
-        )}
-      </div>
-    </div>
-  );
-}
 
 /* ------------------------------ Reports ---------------------------------- */
 

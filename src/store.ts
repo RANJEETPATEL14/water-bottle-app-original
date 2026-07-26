@@ -7,8 +7,11 @@ import type {
   Group,
   Payment,
   Expense,
+  Employee,
+  AppEvent,
   Agency,
   Dues,
+  Invoice,
   Shift,
 } from "./types";
 
@@ -24,6 +27,8 @@ const KEYS = {
   groups: "waterApp_groups",
   payments: "waterApp_payments",
   expenses: "waterApp_expenses",
+  employees: "waterApp_employees",
+  events: "waterApp_events",
   agency: "waterApp_agency",
 } as const;
 
@@ -162,6 +167,8 @@ export interface StoreData {
   groups: Group[];
   payments: Payment[];
   expenses: Expense[];
+  employees: Employee[];
+  events: AppEvent[];
   agency: Agency;
   isOnline: boolean;
 }
@@ -176,6 +183,8 @@ export async function loadAllData(): Promise<StoreData> {
   let cloudGroups: Group[] | null = null;
   let cloudPayments: Payment[] | null = null;
   let cloudExpenses: Expense[] | null = null;
+  let cloudEmployees: Employee[] | null = null;
+  let cloudEvents: AppEvent[] | null = null;
   let cloudAgency: Agency | null = null;
 
   if (isOnline) {
@@ -206,6 +215,14 @@ export async function loadAllData(): Promise<StoreData> {
         if (Array.isArray(result.expenses)) {
           cloudExpenses = result.expenses as Expense[];
           saveLocal(KEYS.expenses, cloudExpenses);
+        }
+        if (Array.isArray(result.employees)) {
+          cloudEmployees = result.employees as Employee[];
+          saveLocal(KEYS.employees, cloudEmployees);
+        }
+        if (Array.isArray(result.events)) {
+          cloudEvents = result.events as AppEvent[];
+          saveLocal(KEYS.events, cloudEvents);
         }
         if (result.agency && typeof result.agency === "object") {
           cloudAgency = result.agency as Agency;
@@ -254,6 +271,8 @@ export async function loadAllData(): Promise<StoreData> {
     groups,
     payments: cloudPayments ?? loadLocal<Payment[]>(KEYS.payments) ?? [],
     expenses: cloudExpenses ?? loadLocal<Expense[]>(KEYS.expenses) ?? [],
+    employees: cloudEmployees ?? loadLocal<Employee[]>(KEYS.employees) ?? [],
+    events: cloudEvents ?? loadLocal<AppEvent[]>(KEYS.events) ?? [],
     agency: cloudAgency ?? loadLocal<Agency>(KEYS.agency) ?? defaultAgency,
     isOnline,
   };
@@ -452,6 +471,52 @@ export function deleteExpense(expenses: Expense[], id: string, isOnline: boolean
 }
 
 /* -------------------------------------------------------------------------- */
+/*  Employees                                                                 */
+/* -------------------------------------------------------------------------- */
+
+export function addEmployee(
+  employees: Employee[],
+  data: Omit<Employee, "id" | "createdAt">,
+  isOnline: boolean,
+): Employee[] {
+  const employee: Employee = { ...data, id: uid(), createdAt: new Date().toISOString() };
+  const updated = [...employees, employee];
+  saveLocal(KEYS.employees, updated);
+  if (isOnline) syncToCloud("addEmployee", { data: employee });
+  return updated;
+}
+
+export function deleteEmployee(employees: Employee[], id: string, isOnline: boolean): Employee[] {
+  const updated = employees.filter((e) => String(e.id) !== String(id));
+  saveLocal(KEYS.employees, updated);
+  if (isOnline) syncToCloud("deleteEmployee", { id });
+  return updated;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Events                                                                    */
+/* -------------------------------------------------------------------------- */
+
+export function addEvent(
+  events: AppEvent[],
+  data: Omit<AppEvent, "id" | "createdAt">,
+  isOnline: boolean,
+): AppEvent[] {
+  const event: AppEvent = { ...data, id: uid(), createdAt: new Date().toISOString() };
+  const updated = [...events, event];
+  saveLocal(KEYS.events, updated);
+  if (isOnline) syncToCloud("addEvent", { data: event });
+  return updated;
+}
+
+export function deleteEvent(events: AppEvent[], id: string, isOnline: boolean): AppEvent[] {
+  const updated = events.filter((e) => String(e.id) !== String(id));
+  saveLocal(KEYS.events, updated);
+  if (isOnline) syncToCloud("deleteEvent", { id });
+  return updated;
+}
+
+/* -------------------------------------------------------------------------- */
 /*  Agency                                                                    */
 /* -------------------------------------------------------------------------- */
 
@@ -552,6 +617,90 @@ export function getCustomerDues(
     currentDue: Math.max(0, currentDue),
     totalDue,
     advance: totalDue < 0 ? -totalDue : 0,
+  };
+}
+
+/** Stable, human-friendly invoice reference number for a customer. */
+export function getInvoiceRef(customers: Customer[], customerId: string): number {
+  const sorted = [...customers].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  const idx = sorted.findIndex((c) => String(c.id) === String(customerId));
+  return 1112 + (idx < 0 ? 0 : idx);
+}
+
+/** Build a monthly invoice for one customer. */
+export function getCustomerInvoice(
+  customer: Customer,
+  deliveries: Delivery[],
+  payments: Payment[],
+  products: Product[],
+  year: number,
+  month: number,
+  ref: number,
+): Invoice {
+  const monthStart = new Date(year, month, 1).getTime();
+  const custDeliveries = getDeliveriesByUser(deliveries, customer.id);
+  const custPayments = getPaymentsByUser(payments, customer.id);
+
+  const inMonth = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.getFullYear() === year && d.getMonth() === month;
+  };
+  const chargeOf = (d: Delivery) => Number(d.amount || d.bottles * d.price);
+
+  // Aggregate this month's delivered quantity per product.
+  const qtyByProduct = new Map<string, number>();
+  let fallbackQty = 0;
+  let fallbackRate = customer.price;
+  for (const d of custDeliveries) {
+    if (!inMonth(d.date)) continue;
+    if (d.items && d.items.length) {
+      for (const it of d.items) {
+        if (it.delivered > 0)
+          qtyByProduct.set(it.productId, (qtyByProduct.get(it.productId) ?? 0) + it.delivered);
+      }
+    } else {
+      fallbackQty += Number(d.bottles);
+      fallbackRate = Number(d.price || customer.price);
+    }
+  }
+
+  const lines: Invoice["lines"] = [];
+  qtyByProduct.forEach((qty, pid) => {
+    if (qty <= 0) return;
+    const p = findProduct(products, pid);
+    const rate = p?.rate ?? customer.price;
+    lines.push({ productId: pid, name: p?.name ?? "Product", qty, rate, total: qty * rate });
+  });
+  if (fallbackQty > 0) {
+    lines.push({ productId: "__default__", name: "Water Jar", qty: fallbackQty, rate: fallbackRate, total: fallbackQty * fallbackRate });
+  }
+
+  const subTotal = lines.reduce((s, l) => s + l.total, 0);
+
+  let pastCharges = 0;
+  for (const d of custDeliveries) {
+    if (new Date(d.date).getTime() < monthStart) pastCharges += chargeOf(d);
+  }
+  let pastPaid = 0;
+  let currentPaid = 0;
+  for (const p of custPayments) {
+    if (new Date(p.date).getTime() < monthStart) pastPaid += Number(p.amount);
+    else if (inMonth(p.date)) currentPaid += Number(p.amount);
+  }
+
+  const pastDue = Number(customer.openingDue || 0) + pastCharges - pastPaid;
+  const amountToPay = pastDue + subTotal - currentPaid;
+
+  return {
+    ref,
+    customerId: customer.id,
+    year,
+    month,
+    lines,
+    subTotal,
+    pastDue,
+    paid: currentPaid,
+    amountToPay,
   };
 }
 

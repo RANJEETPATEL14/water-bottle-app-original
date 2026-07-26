@@ -21,13 +21,13 @@ const menu: { icon: typeof Users; label: string; route: Route }[] = [
   { icon: Umbrella, label: "Groups", route: { name: "groups" } },
   { icon: Users, label: "Customers", route: { name: "customers" } },
   { icon: Warehouse, label: "Load/Unload", route: { name: "inventory" } },
-  { icon: Truck, label: "Deliveries", route: { name: "deliveries" } },
+  { icon: Truck, label: "Deliveries", route: { name: "deliveryBrowse" } },
   { icon: WifiOff, label: "Offline Mode", route: { name: "simple", key: "offline" } },
   { icon: CalendarClock, label: "Monthly Card", route: { name: "monthly" } },
   { icon: HandCoins, label: "Payments", route: { name: "payments" } },
   { icon: FileText, label: "Invoices", route: { name: "invoices" } },
   { icon: Receipt, label: "Expenses", route: { name: "expenses" } },
-  { icon: UserCog, label: "Employees", route: { name: "simple", key: "employees" } },
+  { icon: UserCog, label: "Employees", route: { name: "employees" } },
   { icon: MessageSquare, label: "Messages", route: { name: "messages" } },
 ];
 

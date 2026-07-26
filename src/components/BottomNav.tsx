@@ -5,7 +5,7 @@ const items: { icon: typeof Home; label: string; route: Route }[] = [
   { icon: Wallet, label: "Payments", route: { name: "payments" } },
   { icon: Home, label: "Home", route: { name: "home" } },
   { icon: Store, label: "Products", route: { name: "products" } },
-  { icon: QrCode, label: "Scan", route: { name: "delivery" } },
+  { icon: QrCode, label: "Scan", route: { name: "deliveryBrowse" } },
   { icon: Settings, label: "Agency", route: { name: "agency" } },
 ];
 

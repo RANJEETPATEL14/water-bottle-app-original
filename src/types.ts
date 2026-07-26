@@ -105,6 +105,28 @@ export interface Expense {
   createdAt: string;
 }
 
+export interface Employee {
+  id: string;
+  name: string;
+  phone: string;
+  role: string;
+  otpChannel: "sms" | "whatsapp";
+  createdAt: string;
+}
+
+export interface AppEvent {
+  id: string;
+  customerName: string;
+  customerPhone: string;
+  customerAddress: string;
+  isAgent: boolean;
+  eventName: string;
+  startDate: string;
+  endDate: string;
+  eventAddress: string;
+  createdAt: string;
+}
+
 export interface Agency {
   name: string;
   ownerName: string;
@@ -116,6 +138,26 @@ export interface Agency {
   accountNumber: string;
   ifsc: string;
   upiId: string;
+}
+
+export interface InvoiceLine {
+  productId: string;
+  name: string;
+  qty: number;
+  rate: number;
+  total: number;
+}
+
+export interface Invoice {
+  ref: number;
+  customerId: string;
+  year: number;
+  month: number;
+  lines: InvoiceLine[];
+  subTotal: number;
+  pastDue: number;
+  paid: number;
+  amountToPay: number;
 }
 
 /** Per-customer money summary shown throughout the app. */

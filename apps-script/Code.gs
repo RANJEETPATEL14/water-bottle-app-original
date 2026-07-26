@@ -24,7 +24,7 @@
 
 var TABS = [
   'users', 'deliveries', 'returns', 'products',
-  'groups', 'payments', 'expenses', 'agency'
+  'groups', 'payments', 'expenses', 'employees', 'events', 'agency'
 ];
 
 /**
@@ -39,6 +39,8 @@ var SCHEMAS = {
   groups:     ['id', 'name', 'createdBy', 'createdAt'],
   payments:   ['id', 'userId', 'amount', 'mode', 'receiver', 'date', 'remark', 'createdAt'],
   expenses:   ['id', 'title', 'amount', 'category', 'date', 'notes', 'createdAt'],
+  employees:  ['id', 'name', 'phone', 'role', 'otpChannel', 'createdAt'],
+  events:     ['id', 'customerName', 'customerPhone', 'customerAddress', 'isAgent', 'eventName', 'startDate', 'endDate', 'eventAddress', 'createdAt'],
   agency:     ['name', 'ownerName', 'ownerPhone', 'address', 'email', 'gst', 'bankName', 'accountNumber', 'ifsc', 'upiId']
 };
 
@@ -150,6 +152,12 @@ function handleRequest(e) {
       case 'addExpense':     upsert('expenses', data);     out = ok(); break;
       case 'deleteExpense':  remove('expenses', id);       out = ok(); break;
 
+      case 'addEmployee':    upsert('employees', data);    out = ok(); break;
+      case 'deleteEmployee': remove('employees', id);      out = ok(); break;
+
+      case 'addEvent':       upsert('events', data);       out = ok(); break;
+      case 'deleteEvent':    remove('events', id);         out = ok(); break;
+
       case 'saveAgency':     saveAgency(data);             out = ok(); break;
 
       default: out = { success: false, error: 'Unknown action: ' + action };
@@ -174,6 +182,8 @@ function getAllData() {
     groups:     readTab('groups'),
     payments:   readTab('payments'),
     expenses:   readTab('expenses'),
+    employees:  readTab('employees'),
+    events:     readTab('events'),
     agency:     readAgency()
   };
 }

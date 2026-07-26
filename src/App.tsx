@@ -9,6 +9,8 @@ import { ProductsScreen } from "./components/ProductsScreen";
 import { GroupsScreen } from "./components/GroupsScreen";
 import { NewGroupScreen } from "./components/NewGroupScreen";
 import { DeliveryScreen } from "./components/DeliveryScreen";
+import { DeliveryBrowseScreen } from "./components/DeliveryBrowseScreen";
+import { OpeningDeliveryScreen } from "./components/OpeningDeliveryScreen";
 import { DeliveriesScreen } from "./components/DeliveriesScreen";
 import { PaymentScreen } from "./components/PaymentScreen";
 import { PaymentsScreen } from "./components/PaymentsScreen";
@@ -16,12 +18,11 @@ import { MonthlyScreen } from "./components/MonthlyScreen";
 import { InventoryScreen } from "./components/InventoryScreen";
 import { ExpensesScreen } from "./components/ExpensesScreen";
 import { AgencyScreen } from "./components/AgencyScreen";
-import {
-  InvoicesScreen,
-  ReportsScreen,
-  MessagesScreen,
-  SimpleScreen,
-} from "./components/MiscScreens";
+import { EmployeesScreen } from "./components/EmployeesScreen";
+import { EventsScreen } from "./components/EventsScreen";
+import { InvoicesScreen } from "./components/InvoicesScreen";
+import { InvoiceDetail } from "./components/InvoiceDetail";
+import { ReportsScreen, MessagesScreen, SimpleScreen } from "./components/MiscScreens";
 
 // Screens that show their own full-bleed header (no bottom nav) OR a custom
 // bottom bar of their own.
@@ -31,7 +32,10 @@ const NO_BOTTOM_NAV = new Set([
   "newGroup",
   "customers",
   "delivery",
+  "openingDelivery",
   "payment",
+  "invoices",
+  "invoiceDetail",
 ]);
 
 function Router() {
@@ -54,6 +58,10 @@ function Router() {
       return <NewGroupScreen />;
     case "delivery":
       return <DeliveryScreen customerId={route.customerId} />;
+    case "deliveryBrowse":
+      return <DeliveryBrowseScreen />;
+    case "openingDelivery":
+      return <OpeningDeliveryScreen customerId={route.customerId} />;
     case "deliveries":
       return <DeliveriesScreen />;
     case "payment":
@@ -68,6 +76,12 @@ function Router() {
       return <ExpensesScreen />;
     case "invoices":
       return <InvoicesScreen />;
+    case "invoiceDetail":
+      return <InvoiceDetail customerId={route.customerId} year={route.year} month={route.month} />;
+    case "employees":
+      return <EmployeesScreen />;
+    case "events":
+      return <EventsScreen />;
     case "reports":
       return <ReportsScreen />;
     case "messages":
