@@ -185,26 +185,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setReturns((prev) => [...prev, r]);
       },
       addProduct: (data: Omit<Product, "id" | "createdAt">) =>
-        setProducts(store.addProduct(products, data)),
+        setProducts(store.addProduct(products, data, isOnline)),
       updateProduct: (id: string, data: Partial<Product>) =>
-        setProducts(store.updateProduct(products, id, data)),
+        setProducts(store.updateProduct(products, id, data, isOnline)),
       deleteProduct: (id: string) =>
-        setProducts(store.deleteProduct(products, id)),
+        setProducts(store.deleteProduct(products, id, isOnline)),
       addGroup: (data: Omit<Group, "id" | "createdAt">) => {
-        const { groups: updated, group } = store.addGroup(groups, data);
+        const { groups: updated, group } = store.addGroup(groups, data, isOnline);
         setGroups(updated);
         return group;
       },
-      deleteGroup: (id: string) => setGroups(store.deleteGroup(groups, id)),
+      deleteGroup: (id: string) => setGroups(store.deleteGroup(groups, id, isOnline)),
       addPayment: (data: Omit<Payment, "id" | "createdAt">) =>
-        setPayments(store.addPayment(payments, data)),
+        setPayments(store.addPayment(payments, data, isOnline)),
       deletePayment: (id: string) =>
-        setPayments(store.deletePayment(payments, id)),
+        setPayments(store.deletePayment(payments, id, isOnline)),
       addExpense: (data: Omit<Expense, "id" | "createdAt">) =>
-        setExpenses(store.addExpense(expenses, data)),
+        setExpenses(store.addExpense(expenses, data, isOnline)),
       deleteExpense: (id: string) =>
-        setExpenses(store.deleteExpense(expenses, id)),
-      saveAgency: (a: Agency) => setAgency(store.saveAgency(a)),
+        setExpenses(store.deleteExpense(expenses, id, isOnline)),
+      saveAgency: (a: Agency) => setAgency(store.saveAgency(a, isOnline)),
     }),
     [customers, deliveries, returns, products, groups, payments, expenses, isOnline],
   );

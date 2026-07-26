@@ -166,19 +166,17 @@ export interface StoreData {
   isOnline: boolean;
 }
 
-function seedProducts(): Product[] {
-  return [
-    { id: uid(), name: "Kempar", supplier: "Shree Balaji Water Supply", capacity: "18 L", rate: 20, balanceJar: 0, stockBalance: 0, createdAt: new Date().toISOString() },
-    { id: "p_pani", name: "Pani Kempar", supplier: "Shree Balaji Water Supply", capacity: "20 L", rate: 25, balanceJar: 0, stockBalance: 0, createdAt: new Date().toISOString() },
-  ];
-}
-
 export async function loadAllData(): Promise<StoreData> {
   const isOnline = isGoogleSheetsEnabled();
 
   let rawCustomers: unknown[] | null = null;
   let rawDeliveries: unknown[] | null = null;
   let rawReturns: Return[] | null = null;
+  let cloudProducts: Product[] | null = null;
+  let cloudGroups: Group[] | null = null;
+  let cloudPayments: Payment[] | null = null;
+  let cloudExpenses: Expense[] | null = null;
+  let cloudAgency: Agency | null = null;
 
   if (isOnline) {
     try {
@@ -190,6 +188,29 @@ export async function loadAllData(): Promise<StoreData> {
         saveLocal(KEYS.customers, rawCustomers);
         saveLocal(KEYS.deliveries, rawDeliveries);
         saveLocal(KEYS.returns, rawReturns);
+
+        // New entities — only trust the cloud copy when the Sheet actually
+        // returns the field (older Apps Script deployments won't).
+        if (Array.isArray(result.products)) {
+          cloudProducts = result.products as Product[];
+          saveLocal(KEYS.products, cloudProducts);
+        }
+        if (Array.isArray(result.groups)) {
+          cloudGroups = result.groups as Group[];
+          saveLocal(KEYS.groups, cloudGroups);
+        }
+        if (Array.isArray(result.payments)) {
+          cloudPayments = result.payments as Payment[];
+          saveLocal(KEYS.payments, cloudPayments);
+        }
+        if (Array.isArray(result.expenses)) {
+          cloudExpenses = result.expenses as Expense[];
+          saveLocal(KEYS.expenses, cloudExpenses);
+        }
+        if (result.agency && typeof result.agency === "object") {
+          cloudAgency = result.agency as Agency;
+          saveLocal(KEYS.agency, cloudAgency);
+        }
       }
     } catch (err) {
       console.error("Sync failed, using local data:", err);
@@ -207,18 +228,22 @@ export async function loadAllData(): Promise<StoreData> {
     migrateDelivery(d as Partial<Delivery> & Record<string, unknown>),
   );
 
-  let products = loadLocal<Product[]>(KEYS.products);
-  if (!products || products.length === 0) {
-    products = seedProducts();
-    saveLocal(KEYS.products, products);
-  }
+  // No demo products — the app starts empty and shows only what you add.
+  const products = cloudProducts ?? loadLocal<Product[]>(KEYS.products) ?? [];
 
-  let groups = loadLocal<Group[]>(KEYS.groups);
+  // Every customer needs a group, so keep one built-in "Default Group".
+  // Seed it once and push it to the Sheet so nothing is local-only.
+  let groups = cloudGroups ?? loadLocal<Group[]>(KEYS.groups);
   if (!groups || groups.length === 0) {
-    groups = [
-      { id: DEFAULT_GROUP_ID, name: "Default Group", createdBy: "Agency Owner", createdAt: new Date().toISOString() },
-    ];
+    const defaultGroup: Group = {
+      id: DEFAULT_GROUP_ID,
+      name: "Default Group",
+      createdBy: "Agency Owner",
+      createdAt: new Date().toISOString(),
+    };
+    groups = [defaultGroup];
     saveLocal(KEYS.groups, groups);
+    if (isOnline) syncToCloud("addGroup", { data: defaultGroup });
   }
 
   return {
@@ -227,9 +252,9 @@ export async function loadAllData(): Promise<StoreData> {
     returns: rawReturns,
     products,
     groups,
-    payments: loadLocal<Payment[]>(KEYS.payments) ?? [],
-    expenses: loadLocal<Expense[]>(KEYS.expenses) ?? [],
-    agency: loadLocal<Agency>(KEYS.agency) ?? defaultAgency,
+    payments: cloudPayments ?? loadLocal<Payment[]>(KEYS.payments) ?? [],
+    expenses: cloudExpenses ?? loadLocal<Expense[]>(KEYS.expenses) ?? [],
+    agency: cloudAgency ?? loadLocal<Agency>(KEYS.agency) ?? defaultAgency,
     isOnline,
   };
 }
@@ -326,22 +351,34 @@ export function deleteReturn(returns: Return[], id: string, isOnline: boolean): 
 /*  Products                                                                  */
 /* -------------------------------------------------------------------------- */
 
-export function addProduct(products: Product[], data: Omit<Product, "id" | "createdAt">): Product[] {
+export function addProduct(
+  products: Product[],
+  data: Omit<Product, "id" | "createdAt">,
+  isOnline: boolean,
+): Product[] {
   const product: Product = { ...data, id: uid(), createdAt: new Date().toISOString() };
   const updated = [...products, product];
   saveLocal(KEYS.products, updated);
+  if (isOnline) syncToCloud("addProduct", { data: product });
   return updated;
 }
 
-export function updateProduct(products: Product[], id: string, data: Partial<Product>): Product[] {
+export function updateProduct(
+  products: Product[],
+  id: string,
+  data: Partial<Product>,
+  isOnline: boolean,
+): Product[] {
   const updated = products.map((p) => (String(p.id) === String(id) ? { ...p, ...data } : p));
   saveLocal(KEYS.products, updated);
+  if (isOnline) syncToCloud("updateProduct", { id, data });
   return updated;
 }
 
-export function deleteProduct(products: Product[], id: string): Product[] {
+export function deleteProduct(products: Product[], id: string, isOnline: boolean): Product[] {
   const updated = products.filter((p) => String(p.id) !== String(id));
   saveLocal(KEYS.products, updated);
+  if (isOnline) syncToCloud("deleteProduct", { id });
   return updated;
 }
 
@@ -349,16 +386,22 @@ export function deleteProduct(products: Product[], id: string): Product[] {
 /*  Groups                                                                    */
 /* -------------------------------------------------------------------------- */
 
-export function addGroup(groups: Group[], data: Omit<Group, "id" | "createdAt">): { groups: Group[]; group: Group } {
+export function addGroup(
+  groups: Group[],
+  data: Omit<Group, "id" | "createdAt">,
+  isOnline: boolean,
+): { groups: Group[]; group: Group } {
   const group: Group = { ...data, id: uid(), createdAt: new Date().toISOString() };
   const updated = [...groups, group];
   saveLocal(KEYS.groups, updated);
+  if (isOnline) syncToCloud("addGroup", { data: group });
   return { groups: updated, group };
 }
 
-export function deleteGroup(groups: Group[], id: string): Group[] {
+export function deleteGroup(groups: Group[], id: string, isOnline: boolean): Group[] {
   const updated = groups.filter((g) => String(g.id) !== String(id));
   saveLocal(KEYS.groups, updated);
+  if (isOnline) syncToCloud("deleteGroup", { id });
   return updated;
 }
 
@@ -366,16 +409,22 @@ export function deleteGroup(groups: Group[], id: string): Group[] {
 /*  Payments                                                                  */
 /* -------------------------------------------------------------------------- */
 
-export function addPayment(payments: Payment[], data: Omit<Payment, "id" | "createdAt">): Payment[] {
+export function addPayment(
+  payments: Payment[],
+  data: Omit<Payment, "id" | "createdAt">,
+  isOnline: boolean,
+): Payment[] {
   const payment: Payment = { ...data, id: uid(), createdAt: new Date().toISOString() };
   const updated = [...payments, payment];
   saveLocal(KEYS.payments, updated);
+  if (isOnline) syncToCloud("addPayment", { data: payment });
   return updated;
 }
 
-export function deletePayment(payments: Payment[], id: string): Payment[] {
+export function deletePayment(payments: Payment[], id: string, isOnline: boolean): Payment[] {
   const updated = payments.filter((p) => String(p.id) !== String(id));
   saveLocal(KEYS.payments, updated);
+  if (isOnline) syncToCloud("deletePayment", { id });
   return updated;
 }
 
@@ -383,16 +432,22 @@ export function deletePayment(payments: Payment[], id: string): Payment[] {
 /*  Expenses                                                                  */
 /* -------------------------------------------------------------------------- */
 
-export function addExpense(expenses: Expense[], data: Omit<Expense, "id" | "createdAt">): Expense[] {
+export function addExpense(
+  expenses: Expense[],
+  data: Omit<Expense, "id" | "createdAt">,
+  isOnline: boolean,
+): Expense[] {
   const expense: Expense = { ...data, id: uid(), createdAt: new Date().toISOString() };
   const updated = [...expenses, expense];
   saveLocal(KEYS.expenses, updated);
+  if (isOnline) syncToCloud("addExpense", { data: expense });
   return updated;
 }
 
-export function deleteExpense(expenses: Expense[], id: string): Expense[] {
+export function deleteExpense(expenses: Expense[], id: string, isOnline: boolean): Expense[] {
   const updated = expenses.filter((e) => String(e.id) !== String(id));
   saveLocal(KEYS.expenses, updated);
+  if (isOnline) syncToCloud("deleteExpense", { id });
   return updated;
 }
 
@@ -400,8 +455,9 @@ export function deleteExpense(expenses: Expense[], id: string): Expense[] {
 /*  Agency                                                                    */
 /* -------------------------------------------------------------------------- */
 
-export function saveAgency(agency: Agency): Agency {
+export function saveAgency(agency: Agency, isOnline: boolean): Agency {
   saveLocal(KEYS.agency, agency);
+  if (isOnline) syncToCloud("saveAgency", { data: agency });
   return agency;
 }
 
