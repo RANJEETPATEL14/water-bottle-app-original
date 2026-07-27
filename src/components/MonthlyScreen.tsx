@@ -1,14 +1,16 @@
 import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, FileDown, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, FileDown, Plus, Trash2 } from "lucide-react";
 import jsPDF from "jspdf";
 import { useApp } from "../context";
 import { findUser, findProduct, getDeliveriesByUser, formatDate, formatDisplayDate, money } from "../store";
 import type { Customer, Delivery, DeliveryItem, Shift } from "../types";
 import { ScreenHeader, Avatar, EmptyState, Stepper, SHIFT_OPTIONS } from "./ui";
 import { Modal } from "./Modal";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { CustomerPicker } from "./CustomerPicker";
 
 interface LineRow {
+  id: string;
   shift: string;
   product: string;
   dlvd: number;
@@ -28,6 +30,7 @@ function toLineRows(dels: Delivery[], products: { id: string; name: string }[]):
       for (const it of d.items) {
         const p = products.find((x) => String(x.id) === String(it.productId));
         out.push({
+          id: d.id,
           shift: d.shift,
           product: p?.name ?? "Product",
           dlvd: it.delivered,
@@ -37,7 +40,7 @@ function toLineRows(dels: Delivery[], products: { id: string; name: string }[]):
         });
       }
     } else {
-      out.push({ shift: d.shift, product: "Water Jar", dlvd: d.bottles, rcvd: 0, bal: d.bottles, time });
+      out.push({ id: d.id, shift: d.shift, product: "Water Jar", dlvd: d.bottles, rcvd: 0, bal: d.bottles, time });
     }
   }
   return out;
@@ -212,11 +215,12 @@ function AddTransactionModal({
 }
 
 export function MonthlyScreen({ customerId }: { customerId?: string }) {
-  const { customers, products, deliveries, agency, showToast } = useApp();
+  const { customers, products, deliveries, agency, deleteDelivery, showToast } = useApp();
   const [selectedId, setSelectedId] = useState<string | undefined>(customerId);
   const [picker, setPicker] = useState(false);
   const [openDay, setOpenDay] = useState<number | null>(null);
   const [addDay, setAddDay] = useState<number | null>(null);
+  const [delId, setDelId] = useState<string | null>(null);
   const now = new Date();
   const [ym, setYm] = useState({ year: now.getFullYear(), month: now.getMonth() });
 
@@ -385,13 +389,14 @@ export function MonthlyScreen({ customerId }: { customerId?: string }) {
             </div>
 
             {/* Column header */}
-            <div className="bg-sky-500 text-white grid grid-cols-[1.6fr_1.4fr_0.7fr_0.7fr_0.7fr_1fr] text-xs font-medium rounded-lg overflow-hidden">
+            <div className="bg-sky-500 text-white grid grid-cols-[1.6fr_1.4fr_0.7fr_0.7fr_0.7fr_1fr_auto] text-xs font-medium rounded-lg overflow-hidden">
               <span className="px-2 py-2">Shift</span>
               <span className="px-1 py-2">Product</span>
               <span className="px-1 py-2 text-center">DLVD</span>
               <span className="px-1 py-2 text-center">RCVD</span>
               <span className="px-1 py-2 text-center">Bal</span>
               <span className="px-1 py-2 text-center">Time</span>
+              <span className="px-2 py-2" />
             </div>
 
             {/* Day-by-day accordion */}
@@ -448,7 +453,7 @@ export function MonthlyScreen({ customerId }: { customerId?: string }) {
                             {lines.map((l, idx) => (
                               <div
                                 key={idx}
-                                className="grid grid-cols-[1.6fr_1.4fr_0.7fr_0.7fr_0.7fr_1fr] text-xs border-b border-slate-100 last:border-0"
+                                className="grid grid-cols-[1.6fr_1.4fr_0.7fr_0.7fr_0.7fr_1fr_auto] text-xs border-b border-slate-100 last:border-0 items-center"
                               >
                                 <span className="px-2 py-2 capitalize text-slate-600">{l.shift}</span>
                                 <span className="px-1 py-2 text-slate-700 truncate">{l.product}</span>
@@ -456,6 +461,13 @@ export function MonthlyScreen({ customerId }: { customerId?: string }) {
                                 <span className="px-1 py-2 text-center">{l.rcvd}</span>
                                 <span className="px-1 py-2 text-center">{l.bal}</span>
                                 <span className="px-1 py-2 text-center text-slate-500">{l.time}</span>
+                                <button
+                                  onClick={() => setDelId(l.id)}
+                                  aria-label="Delete transaction"
+                                  className="px-2 py-2 flex items-center justify-center text-red-400 active:scale-95"
+                                >
+                                  <Trash2 size={15} />
+                                </button>
                               </div>
                             ))}
                           </div>
@@ -496,6 +508,19 @@ export function MonthlyScreen({ customerId }: { customerId?: string }) {
           initialDate={formatDate(new Date(ym.year, ym.month, addDay))}
         />
       )}
+
+      <ConfirmDialog
+        open={delId !== null}
+        message="This transaction will be permanently deleted."
+        onCancel={() => setDelId(null)}
+        onConfirm={() => {
+          if (delId) {
+            deleteDelivery(delId);
+            showToast("Transaction deleted", "success");
+          }
+          setDelId(null);
+        }}
+      />
     </div>
   );
 }
