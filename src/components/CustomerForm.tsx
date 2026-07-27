@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { Contact } from "lucide-react";
 import { useApp } from "../context";
 import { findUser, DEFAULT_GROUP_ID } from "../store";
+import { pickContact, contactsSupported } from "../contacts";
 import type { Frequency, Shift } from "../types";
 import { ScreenHeader, Field, inputClass, Segmented, SHIFT_OPTIONS, Avatar } from "./ui";
 
@@ -22,6 +24,18 @@ export function CustomerForm({ id }: { id?: string }) {
   const [price, setPrice] = useState(existing?.price ?? 20);
   const [openingDue, setOpeningDue] = useState(existing?.openingDue ?? 0);
   const [securityDeposit, setSecurityDeposit] = useState(existing?.securityDeposit ?? 0);
+
+  async function importContact() {
+    if (!contactsSupported()) {
+      showToast("Contact picker isn't supported on this device/browser", "error");
+      return;
+    }
+    const c = await pickContact();
+    if (!c) return;
+    if (c.name) setName(c.name);
+    if (c.tel) setPhone(c.tel.replace(/\s+/g, ""));
+    showToast("Contact imported", "success");
+  }
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -66,7 +80,17 @@ export function CustomerForm({ id }: { id?: string }) {
 
       <form onSubmit={submit} className="bg-white -mt-4 rounded-t-3xl p-5 space-y-5">
         <Field label="Full Name" required>
-          <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} />
+          <div className="flex items-center gap-2">
+            <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} />
+            <button
+              type="button"
+              onClick={importContact}
+              aria-label="Pick from contacts"
+              className="shrink-0 w-10 h-10 rounded-lg bg-sky-500 text-white flex items-center justify-center active:scale-95"
+            >
+              <Contact size={20} />
+            </button>
+          </div>
         </Field>
         <Field label="Mobile No">
           <input

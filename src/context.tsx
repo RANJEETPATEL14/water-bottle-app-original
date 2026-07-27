@@ -138,6 +138,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       else if (h === "invoices") initial.push({ name: "invoices" });
       else if (h === "employees") initial.push({ name: "employees" });
       else if (h === "events") initial.push({ name: "events" });
+      else if (h === "customerForm") initial.push({ name: "customerForm" });
+      else if (h === "monthly") initial.push({ name: "monthly" });
       return initial;
     })(),
   );

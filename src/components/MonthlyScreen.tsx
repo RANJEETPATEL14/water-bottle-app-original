@@ -1,15 +1,52 @@
 import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, FileDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown, Check, FileDown } from "lucide-react";
 import jsPDF from "jspdf";
 import { useApp } from "../context";
 import { findUser, findProduct, getDeliveriesByUser } from "../store";
+import type { Delivery } from "../types";
 import { ScreenHeader, Avatar, EmptyState } from "./ui";
 import { CustomerPicker } from "./CustomerPicker";
+
+interface LineRow {
+  shift: string;
+  product: string;
+  dlvd: number;
+  rcvd: number;
+  bal: number;
+  time: string;
+}
+
+function toLineRows(dels: Delivery[], products: { id: string; name: string }[]): LineRow[] {
+  const out: LineRow[] = [];
+  for (const d of dels) {
+    const time = new Date(d.createdAt || d.date).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    if (d.items && d.items.length) {
+      for (const it of d.items) {
+        const p = products.find((x) => String(x.id) === String(it.productId));
+        out.push({
+          shift: d.shift,
+          product: p?.name ?? "Product",
+          dlvd: it.delivered,
+          rcvd: it.received,
+          bal: it.delivered - it.received,
+          time,
+        });
+      }
+    } else {
+      out.push({ shift: d.shift, product: "Water Jar", dlvd: d.bottles, rcvd: 0, bal: d.bottles, time });
+    }
+  }
+  return out;
+}
 
 export function MonthlyScreen({ customerId }: { customerId?: string }) {
   const { customers, products, deliveries, agency, showToast } = useApp();
   const [selectedId, setSelectedId] = useState<string | undefined>(customerId);
   const [picker, setPicker] = useState(false);
+  const [openDay, setOpenDay] = useState<number | null>(null);
   const now = new Date();
   const [ym, setYm] = useState({ year: now.getFullYear(), month: now.getMonth() });
 
@@ -51,6 +88,19 @@ export function MonthlyScreen({ customerId }: { customerId?: string }) {
     }
     return map;
   }, [rows, products]);
+
+  // Deliveries grouped by day-of-month for the accordion.
+  const byDay = useMemo(() => {
+    const map = new Map<number, Delivery[]>();
+    for (const d of rows) {
+      const day = new Date(d.date).getDate();
+      if (!map.has(day)) map.set(day, []);
+      map.get(day)!.push(d);
+    }
+    return map;
+  }, [rows]);
+
+  const daysInMonth = new Date(ym.year, ym.month + 1, 0).getDate();
 
   function exportPdf() {
     if (!customer) return;
@@ -164,32 +214,86 @@ export function MonthlyScreen({ customerId }: { customerId?: string }) {
               </table>
             </div>
 
-            <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
-              <div className="bg-sky-500 text-white grid grid-cols-5 text-xs font-medium">
-                <span className="px-2 py-2">Date</span>
-                <span className="px-1 py-2 text-center">Shift</span>
-                <span className="px-1 py-2 text-center">Dlvd</span>
-                <span className="px-1 py-2 text-center">Rcvd</span>
-                <span className="px-1 py-2 text-center">Amount</span>
-              </div>
-              {rows.length === 0 ? (
-                <p className="text-center text-slate-400 text-sm py-6">No transactions this month.</p>
-              ) : (
-                rows.map((d) => {
-                  const rcvd = (d.items ?? []).reduce((s, i) => s + i.received, 0);
-                  return (
-                    <div key={d.id} className="grid grid-cols-5 text-sm border-b border-slate-100">
-                      <span className="px-2 py-2 text-slate-600">
-                        {new Date(d.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}
+            {/* Column header */}
+            <div className="bg-sky-500 text-white grid grid-cols-[1.6fr_1.4fr_0.7fr_0.7fr_0.7fr_1fr] text-xs font-medium rounded-lg overflow-hidden">
+              <span className="px-2 py-2">Shift</span>
+              <span className="px-1 py-2">Product</span>
+              <span className="px-1 py-2 text-center">DLVD</span>
+              <span className="px-1 py-2 text-center">RCVD</span>
+              <span className="px-1 py-2 text-center">Bal</span>
+              <span className="px-1 py-2 text-center">Time</span>
+            </div>
+
+            {/* Day-by-day accordion */}
+            <div className="bg-white rounded-2xl overflow-hidden shadow-sm divide-y divide-slate-100">
+              {Array.from({ length: daysInMonth }, (_, i) => daysInMonth - i).map((day) => {
+                const dels = byDay.get(day) ?? [];
+                const has = dels.length > 0;
+                const dayDate = new Date(ym.year, ym.month, day);
+                const label = `${dayDate.toLocaleDateString("en-US", { month: "short", day: "2-digit" })}, ${String(ym.year).slice(2)}, ${dayDate.toLocaleDateString("en-US", { weekday: "short" })}`;
+                const open = openDay === day;
+                const lines = has ? toLineRows(dels, products) : [];
+                return (
+                  <div key={day}>
+                    <button
+                      onClick={() => setOpenDay(open ? null : day)}
+                      className="w-full flex items-center gap-3 px-3 py-3 text-left"
+                    >
+                      <span
+                        className={`w-6 h-6 rounded-full flex items-center justify-center text-white shrink-0 ${
+                          has ? "bg-emerald-500" : "bg-red-400"
+                        }`}
+                      >
+                        <Check size={14} />
                       </span>
-                      <span className="px-1 py-2 text-center capitalize text-slate-500 text-xs">{d.shift}</span>
-                      <span className="px-1 py-2 text-center">{d.bottles}</span>
-                      <span className="px-1 py-2 text-center">{rcvd}</span>
-                      <span className="px-1 py-2 text-center text-slate-700">₹{d.amount.toFixed(0)}</span>
-                    </div>
-                  );
-                })
-              )}
+                      <span className="flex-1 font-medium text-slate-700">{label}</span>
+                      <ChevronDown
+                        size={18}
+                        className={`text-slate-400 transition-transform ${open ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                    {open && (
+                      <div className="px-3 pb-3">
+                        {lines.length === 0 ? (
+                          <p className="text-center text-slate-400 text-sm py-3">No Transaction</p>
+                        ) : (
+                          <div className="rounded-lg border border-slate-100 overflow-hidden">
+                            {lines.map((l, idx) => (
+                              <div
+                                key={idx}
+                                className="grid grid-cols-[1.6fr_1.4fr_0.7fr_0.7fr_0.7fr_1fr] text-xs border-b border-slate-100 last:border-0"
+                              >
+                                <span className="px-2 py-2 capitalize text-slate-600">{l.shift}</span>
+                                <span className="px-1 py-2 text-slate-700 truncate">{l.product}</span>
+                                <span className="px-1 py-2 text-center">{l.dlvd}</span>
+                                <span className="px-1 py-2 text-center">{l.rcvd}</span>
+                                <span className="px-1 py-2 text-center">{l.bal}</span>
+                                <span className="px-1 py-2 text-center text-slate-500">{l.time}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Previous / Next month paging */}
+            <div className="flex rounded-2xl overflow-hidden border border-slate-200">
+              <button
+                onClick={() => { stepMonth(-1); setOpenDay(null); }}
+                className="flex-1 py-3 bg-white text-sky-500 font-semibold flex items-center justify-center gap-1"
+              >
+                <ChevronLeft size={18} /> Previous
+              </button>
+              <button
+                onClick={() => { stepMonth(1); setOpenDay(null); }}
+                className="flex-1 py-3 bg-sky-500 text-white font-semibold flex items-center justify-center gap-1"
+              >
+                Next <ChevronRight size={18} />
+              </button>
             </div>
           </>
         )}
