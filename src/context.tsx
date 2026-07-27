@@ -85,6 +85,7 @@ interface AppState {
   updateCustomer: (id: string, data: Partial<Customer>) => void;
   deleteCustomer: (id: string) => void;
   addDelivery: (data: Omit<Delivery, "id" | "createdAt">) => void;
+  updateDelivery: (id: string, data: Partial<Delivery>) => void;
   deleteDelivery: (id: string) => void;
   addReturn: (data: Omit<Return, "id" | "createdAt">) => void;
   addProduct: (data: Omit<Product, "id" | "createdAt">) => void;
@@ -201,6 +202,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const d = store.addDelivery(deliveries, data, isOnline);
         setDeliveries((prev) => [...prev, d]);
       },
+      updateDelivery: (id: string, data: Partial<Delivery>) =>
+        setDeliveries(store.updateDelivery(deliveries, id, data, isOnline)),
       deleteDelivery: (id: string) =>
         setDeliveries(store.deleteDelivery(deliveries, id, isOnline)),
       addReturn: (data: Omit<Return, "id" | "createdAt">) => {

@@ -336,6 +336,24 @@ export function addDelivery(
   return delivery;
 }
 
+export function updateDelivery(
+  deliveries: Delivery[],
+  id: string,
+  data: Partial<Delivery>,
+  isOnline: boolean,
+): Delivery[] {
+  let updatedRow: Delivery | undefined;
+  const updated = deliveries.map((d) => {
+    if (String(d.id) !== String(id)) return d;
+    updatedRow = { ...d, ...data };
+    return updatedRow;
+  });
+  saveLocal(KEYS.deliveries, updated);
+  // The backend "addDelivery" action is an upsert, so re-sending the full row updates it.
+  if (isOnline && updatedRow) syncToCloud("addDelivery", { data: updatedRow });
+  return updated;
+}
+
 export function deleteDelivery(deliveries: Delivery[], id: string, isOnline: boolean): Delivery[] {
   const updated = deliveries.filter((d) => d.id !== id);
   saveLocal(KEYS.deliveries, updated);

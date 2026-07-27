@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, FileDown, Plus, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, FileDown, Plus, Trash2, ClipboardEdit } from "lucide-react";
 import jsPDF from "jspdf";
 import { useApp } from "../context";
 import { findUser, findProduct, getDeliveriesByUser, formatDate, formatDisplayDate, money } from "../store";
@@ -47,7 +47,7 @@ function toLineRows(dels: Delivery[], products: { id: string; name: string }[]):
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Add-transaction modal — create a delivery for a specific day              */
+/*  Add / edit transaction modal — create or update a delivery for a day      */
 /* -------------------------------------------------------------------------- */
 
 function AddTransactionModal({
@@ -55,25 +55,36 @@ function AddTransactionModal({
   onClose,
   customer,
   initialDate,
+  delivery,
 }: {
   open: boolean;
   onClose: () => void;
   customer: Customer;
   initialDate: string;
+  delivery?: Delivery;
 }) {
-  const { products, addDelivery, showToast } = useApp();
+  const { products, addDelivery, updateDelivery, showToast } = useApp();
+  const isEdit = !!delivery;
   const [date, setDate] = useState(initialDate);
   const [shift, setShift] = useState<Shift>("morning");
   const [rows, setRows] = useState<Record<string, DeliveryItem>>({});
   const [showOthers, setShowOthers] = useState(false);
 
-  // Reset the form whenever the modal is (re)opened for a new day.
+  // Reset the form whenever the modal is (re)opened for a new day / delivery.
   const [lastKey, setLastKey] = useState("");
-  const key = `${open}-${initialDate}`;
+  const key = `${open}-${delivery?.id ?? ""}-${initialDate}`;
   if (open && key !== lastKey) {
-    setDate(initialDate);
-    setShift("morning");
-    setRows({});
+    if (delivery) {
+      setDate(delivery.date);
+      setShift(delivery.shift);
+      const preset: Record<string, DeliveryItem> = {};
+      for (const it of delivery.items ?? []) preset[it.productId] = { ...it };
+      setRows(preset);
+    } else {
+      setDate(initialDate);
+      setShift("morning");
+      setRows({});
+    }
     setShowOthers(false);
     setLastKey(key);
   }
@@ -112,22 +123,28 @@ function AddTransactionModal({
     }
     const bottles = items.reduce((s, i) => s + i.delivered, 0);
     const amount = items.reduce((s, i) => s + i.delivered * rate(i.productId), 0);
-    addDelivery({
-      userId: customer.id,
-      date,
-      shift,
-      items,
-      bottles,
-      price: customer.price,
-      amount,
-      notes: "",
-    });
-    showToast(`Transaction saved for ${customer.name}`, "success");
+    if (delivery) {
+      updateDelivery(delivery.id, { date, shift, items, bottles, price: customer.price, amount });
+      showToast(`Transaction updated for ${customer.name}`, "success");
+    } else {
+      addDelivery({
+        userId: customer.id,
+        date,
+        shift,
+        items,
+        bottles,
+        price: customer.price,
+        amount,
+        notes: "",
+      });
+      showToast(`Transaction saved for ${customer.name}`, "success");
+    }
     onClose();
   }
 
   function productCard(p: (typeof products)[number]) {
     const row = getRow(p.id);
+    const cost = row.delivered * rate(p.id);
     return (
       <div key={p.id} className="rounded-2xl border border-slate-200 p-4">
         <div className="flex items-start gap-3">
@@ -146,6 +163,10 @@ function AddTransactionModal({
             </div>
           </div>
         </div>
+        <p className="text-right text-xs text-slate-500 mt-2">
+          Product Cost ({p.rate.toFixed(1)} × {row.delivered}) ={" "}
+          <span className="font-bold text-slate-800">{money(cost)}</span>
+        </p>
       </div>
     );
   }
@@ -176,7 +197,11 @@ function AddTransactionModal({
         </div>
 
         <p className="text-sm text-slate-500">
-          Create transaction for <span className="font-semibold text-slate-700">{formatDisplayDate(date)}</span>.
+          {isEdit ? (
+            <>Editing transaction for <span className="font-semibold text-slate-700">{formatDisplayDate(date)}</span>.</>
+          ) : (
+            <>Create transaction for <span className="font-semibold text-slate-700">{formatDisplayDate(date)}</span>.</>
+          )}
         </p>
 
         {primary && productCard(primary)}
@@ -206,7 +231,7 @@ function AddTransactionModal({
             Reset
           </button>
           <button onClick={submit} className="flex-1 py-3 rounded-xl bg-sky-500 text-white font-semibold">
-            Submit
+            {isEdit ? "Update" : "Submit"}
           </button>
         </div>
       </div>
@@ -220,6 +245,7 @@ export function MonthlyScreen({ customerId }: { customerId?: string }) {
   const [picker, setPicker] = useState(false);
   const [openDay, setOpenDay] = useState<number | null>(null);
   const [addDay, setAddDay] = useState<number | null>(null);
+  const [editTarget, setEditTarget] = useState<Delivery | null>(null);
   const [delId, setDelId] = useState<string | null>(null);
   const now = new Date();
   const [ym, setYm] = useState({ year: now.getFullYear(), month: now.getMonth() });
@@ -389,14 +415,13 @@ export function MonthlyScreen({ customerId }: { customerId?: string }) {
             </div>
 
             {/* Column header */}
-            <div className="bg-sky-500 text-white grid grid-cols-[1.6fr_1.4fr_0.7fr_0.7fr_0.7fr_1fr_auto] text-xs font-medium rounded-lg overflow-hidden">
+            <div className="bg-sky-500 text-white grid grid-cols-[1.6fr_1.4fr_0.7fr_0.7fr_0.7fr_1fr] text-xs font-medium rounded-lg overflow-hidden">
               <span className="px-2 py-2">Shift</span>
               <span className="px-1 py-2">Product</span>
               <span className="px-1 py-2 text-center">DLVD</span>
               <span className="px-1 py-2 text-center">RCVD</span>
               <span className="px-1 py-2 text-center">Bal</span>
               <span className="px-1 py-2 text-center">Time</span>
-              <span className="px-2 py-2" />
             </div>
 
             {/* Day-by-day accordion */}
@@ -424,15 +449,33 @@ export function MonthlyScreen({ customerId }: { customerId?: string }) {
                         </span>
                         <span className="flex-1 font-medium text-slate-700">{label}</span>
                       </button>
-                      {open && (
-                        <button
-                          onClick={() => setAddDay(day)}
-                          aria-label="Add transaction"
-                          className="w-8 h-8 flex items-center justify-center text-sky-500 active:scale-95"
-                        >
-                          <Plus size={20} />
-                        </button>
-                      )}
+                      {open &&
+                        (has ? (
+                          <>
+                            <button
+                              onClick={() => setEditTarget(dels[0]!)}
+                              aria-label="Edit transaction"
+                              className="w-8 h-8 flex items-center justify-center text-sky-500 active:scale-95"
+                            >
+                              <ClipboardEdit size={20} />
+                            </button>
+                            <button
+                              onClick={() => setDelId(dels[0]!.id)}
+                              aria-label="Delete transaction"
+                              className="w-8 h-8 flex items-center justify-center text-red-500 active:scale-95"
+                            >
+                              <Trash2 size={19} />
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={() => setAddDay(day)}
+                            aria-label="Add transaction"
+                            className="w-8 h-8 flex items-center justify-center text-sky-500 active:scale-95"
+                          >
+                            <Plus size={20} />
+                          </button>
+                        ))}
                       <button
                         onClick={() => setOpenDay(open ? null : day)}
                         aria-label={open ? "Collapse" : "Expand"}
@@ -453,7 +496,7 @@ export function MonthlyScreen({ customerId }: { customerId?: string }) {
                             {lines.map((l, idx) => (
                               <div
                                 key={idx}
-                                className="grid grid-cols-[1.6fr_1.4fr_0.7fr_0.7fr_0.7fr_1fr_auto] text-xs border-b border-slate-100 last:border-0 items-center"
+                                className="grid grid-cols-[1.6fr_1.4fr_0.7fr_0.7fr_0.7fr_1fr] text-xs border-b border-slate-100 last:border-0 items-center"
                               >
                                 <span className="px-2 py-2 capitalize text-slate-600">{l.shift}</span>
                                 <span className="px-1 py-2 text-slate-700 truncate">{l.product}</span>
@@ -461,13 +504,6 @@ export function MonthlyScreen({ customerId }: { customerId?: string }) {
                                 <span className="px-1 py-2 text-center">{l.rcvd}</span>
                                 <span className="px-1 py-2 text-center">{l.bal}</span>
                                 <span className="px-1 py-2 text-center text-slate-500">{l.time}</span>
-                                <button
-                                  onClick={() => setDelId(l.id)}
-                                  aria-label="Delete transaction"
-                                  className="px-2 py-2 flex items-center justify-center text-red-400 active:scale-95"
-                                >
-                                  <Trash2 size={15} />
-                                </button>
                               </div>
                             ))}
                           </div>
@@ -506,6 +542,16 @@ export function MonthlyScreen({ customerId }: { customerId?: string }) {
           onClose={() => setAddDay(null)}
           customer={customer}
           initialDate={formatDate(new Date(ym.year, ym.month, addDay))}
+        />
+      )}
+
+      {customer && editTarget && (
+        <AddTransactionModal
+          open={!!editTarget}
+          onClose={() => setEditTarget(null)}
+          customer={customer}
+          initialDate={editTarget.date}
+          delivery={editTarget}
         />
       )}
 
