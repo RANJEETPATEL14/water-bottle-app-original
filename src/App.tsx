@@ -15,6 +15,7 @@ import { DeliveriesScreen } from "./components/DeliveriesScreen";
 import { PaymentScreen } from "./components/PaymentScreen";
 import { PaymentsScreen } from "./components/PaymentsScreen";
 import { MonthlyScreen } from "./components/MonthlyScreen";
+import { LedgerScreen } from "./components/LedgerScreen";
 import { InventoryScreen } from "./components/InventoryScreen";
 import { ExpensesScreen } from "./components/ExpensesScreen";
 import { AgencyScreen } from "./components/AgencyScreen";
@@ -70,6 +71,8 @@ function Router() {
       return <PaymentsScreen />;
     case "monthly":
       return <MonthlyScreen customerId={route.customerId} />;
+    case "ledger":
+      return <LedgerScreen customerId={route.customerId} />;
     case "inventory":
       return <InventoryScreen />;
     case "expenses":

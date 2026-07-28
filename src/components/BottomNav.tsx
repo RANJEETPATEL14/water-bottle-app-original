@@ -1,4 +1,4 @@
-import { Wallet, Home, Store, QrCode, Settings } from "lucide-react";
+import { Wallet, Home, Store, QrCode, Settings, BookText } from "lucide-react";
 import { useApp, type Route } from "../context";
 
 const items: { icon: typeof Home; label: string; route: Route }[] = [
@@ -6,6 +6,7 @@ const items: { icon: typeof Home; label: string; route: Route }[] = [
   { icon: Home, label: "Home", route: { name: "home" } },
   { icon: Store, label: "Products", route: { name: "products" } },
   { icon: QrCode, label: "Scan", route: { name: "deliveryBrowse" } },
+  { icon: BookText, label: "Ledger", route: { name: "ledger" } },
   { icon: Settings, label: "Agency", route: { name: "agency" } },
 ];
 
@@ -25,8 +26,8 @@ export function BottomNav() {
             }`}
           >
             <Icon size={22} />
-            {it.route.name === "home" && (
-              <span className="text-[0.65rem] font-medium">Home</span>
+            {(active || it.route.name === "home") && (
+              <span className="text-[0.65rem] font-medium">{it.label}</span>
             )}
           </button>
         );

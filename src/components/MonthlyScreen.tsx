@@ -78,7 +78,28 @@ function AddTransactionModal({
       setDate(delivery.date);
       setShift(delivery.shift);
       const preset: Record<string, DeliveryItem> = {};
-      for (const it of delivery.items ?? []) preset[it.productId] = { ...it };
+      const items = delivery.items ?? [];
+      items.forEach((it, i) => {
+        // Stored item ids may differ in type or have drifted from the current
+        // product list, so match as strings and fall back to position.
+        const match = products.find((p) => String(p.id) === String(it.productId));
+        const target = match ?? products[i] ?? products[0];
+        if (!target) return;
+        const cur = preset[target.id] ?? { productId: target.id, delivered: 0, received: 0 };
+        preset[target.id] = {
+          productId: target.id,
+          delivered: cur.delivered + Number(it.delivered || 0),
+          received: cur.received + Number(it.received || 0),
+        };
+      });
+      // Legacy rows stored only a bottle count with no per-product items.
+      if (items.length === 0 && Number(delivery.bottles) > 0 && products[0]) {
+        preset[products[0].id] = {
+          productId: products[0].id,
+          delivered: Number(delivery.bottles),
+          received: 0,
+        };
+      }
       setRows(preset);
     } else {
       setDate(initialDate);

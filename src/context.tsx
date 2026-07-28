@@ -40,6 +40,7 @@ export type Route =
   | { name: "openingDelivery"; customerId?: string }
   | { name: "deliveries" }
   | { name: "monthly"; customerId?: string }
+  | { name: "ledger"; customerId?: string }
   | { name: "inventory" }
   | { name: "expenses" }
   | { name: "invoices" }
@@ -141,6 +142,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       else if (h === "events") initial.push({ name: "events" });
       else if (h === "customerForm") initial.push({ name: "customerForm" });
       else if (h === "monthly") initial.push({ name: "monthly" });
+      else if (h === "ledger") initial.push({ name: "ledger" });
       return initial;
     })(),
   );

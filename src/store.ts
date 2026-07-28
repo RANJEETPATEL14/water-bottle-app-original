@@ -97,7 +97,12 @@ function normalizeDate(dateValue: string): string {
 }
 
 export function formatDate(date: Date): string {
-  return date.toISOString().split("T")[0]!;
+  // Use local date parts (not toISOString, which is UTC) so a day picked in a
+  // positive-offset timezone like IST isn't shifted back to the previous day.
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
 export function formatDisplayDate(dateStr: string): string {
