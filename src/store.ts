@@ -119,6 +119,22 @@ export function money(n: number): string {
 }
 
 /* -------------------------------------------------------------------------- */
+/*  Customer sort — shared by the Customers list and the customer picker      */
+/* -------------------------------------------------------------------------- */
+
+export type CustomerSort = "time" | "az" | "za";
+
+/** Return a new array of customers ordered by the given preference. */
+export function sortCustomers(list: Customer[], sort: CustomerSort): Customer[] {
+  const byName = (a: Customer, b: Customer) => a.name.localeCompare(b.name);
+  const byTime = (a: Customer, b: Customer) =>
+    new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+  const cmp =
+    sort === "az" ? byName : sort === "za" ? (a: Customer, b: Customer) => byName(b, a) : byTime;
+  return [...list].sort(cmp);
+}
+
+/* -------------------------------------------------------------------------- */
 /*  Migration — bring legacy User rows up to the Customer shape               */
 /* -------------------------------------------------------------------------- */
 

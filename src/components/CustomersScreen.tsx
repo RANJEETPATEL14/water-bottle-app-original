@@ -1,38 +1,30 @@
 import { useMemo, useState } from "react";
 import { Phone, HandCoins, ArrowDownUp } from "lucide-react";
 import { useApp } from "../context";
-import { getCustomerDues, findGroup } from "../store";
-import type { Customer, Frequency } from "../types";
+import { getCustomerDues, findGroup, sortCustomers, type CustomerSort } from "../store";
+import type { Frequency } from "../types";
 import { ScreenHeader, SearchBar, Segmented, DuesRow, Avatar, EmptyState } from "./ui";
 
 type Filter = "all" | Frequency;
-type Sort = "time" | "az" | "za";
 
-const SORT_OPTIONS: { value: Sort; label: string }[] = [
+const SORT_OPTIONS: { value: CustomerSort; label: string }[] = [
   { value: "time", label: "Time (oldest first)" },
   { value: "az", label: "Name A–Z" },
   { value: "za", label: "Name Z–A" },
 ];
 
 export function CustomersScreen() {
-  const { customers, deliveries, returns, payments, groups, navigate } = useApp();
+  const { customers, deliveries, returns, payments, groups, navigate, customerSort, setCustomerSort } = useApp();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
-  const [sort, setSort] = useState<Sort>("time");
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const byTime = (a: (typeof customers)[number], b: (typeof customers)[number]) =>
-      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-    const byName = (a: (typeof customers)[number], b: (typeof customers)[number]) =>
-      a.name.localeCompare(b.name);
-    const comparator =
-      sort === "az" ? byName : sort === "za" ? (a: Customer, b: Customer) => byName(b, a) : byTime;
-    return customers
+    const filtered = customers
       .filter((c) => (filter === "all" ? true : c.frequency === filter))
-      .filter((c) => !q || c.name.toLowerCase().includes(q) || c.phone.includes(q))
-      .sort(comparator);
-  }, [customers, query, filter, sort]);
+      .filter((c) => !q || c.name.toLowerCase().includes(q) || c.phone.includes(q));
+    return sortCustomers(filtered, customerSort);
+  }, [customers, query, filter, customerSort]);
 
   return (
     <div className="pb-24">
@@ -56,8 +48,8 @@ export function CustomersScreen() {
           <div className="flex items-center gap-1 bg-white rounded-full pl-3 pr-2 py-1.5 shadow-sm shrink-0">
             <ArrowDownUp size={16} className="text-sky-500" />
             <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value as Sort)}
+              value={customerSort}
+              onChange={(e) => setCustomerSort(e.target.value as CustomerSort)}
               aria-label="Sort customers"
               className="text-sm text-slate-700 font-medium bg-transparent outline-none"
             >

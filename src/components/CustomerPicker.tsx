@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useApp } from "../context";
+import { sortCustomers } from "../store";
 import { Modal } from "./Modal";
 import { SearchBar, Avatar } from "./ui";
 
@@ -12,15 +13,16 @@ export function CustomerPicker({
   onClose: () => void;
   onPick: (id: string) => void;
 }) {
-  const { customers } = useApp();
+  const { customers, customerSort } = useApp();
   const [query, setQuery] = useState("");
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return customers
-      .filter((c) => !q || c.name.toLowerCase().includes(q) || c.phone.includes(q))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [customers, query]);
+    const filtered = customers.filter(
+      (c) => !q || c.name.toLowerCase().includes(q) || c.phone.includes(q),
+    );
+    return sortCustomers(filtered, customerSort);
+  }, [customers, query, customerSort]);
 
   return (
     <Modal open={open} onClose={onClose} title="Select Customer">

@@ -75,6 +75,10 @@ interface AppState {
   back: () => void;
   goHome: () => void;
 
+  // shared UI preferences
+  customerSort: store.CustomerSort;
+  setCustomerSort: (sort: store.CustomerSort) => void;
+
   toast: { message: string; type: ToastType } | null;
   showToast: (message: string, type: ToastType) => void;
   dismissToast: () => void;
@@ -126,6 +130,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [events, setEvents] = useState<AppEvent[]>([]);
   const [agency, setAgency] = useState<Agency>(store.defaultAgency);
+
+  const [customerSort, setCustomerSortState] = useState<store.CustomerSort>(() => {
+    const v = typeof localStorage !== "undefined" ? localStorage.getItem("waterApp_customerSort") : null;
+    return v === "az" || v === "za" || v === "time" ? v : "time";
+  });
+  const setCustomerSort = useCallback((sort: store.CustomerSort) => {
+    setCustomerSortState(sort);
+    try {
+      localStorage.setItem("waterApp_customerSort", sort);
+    } catch {
+      /* ignore storage errors */
+    }
+  }, []);
 
   const [stack, setStack] = useState<Route[]>(
     (() => {
@@ -258,6 +275,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     employees,
     events,
     agency,
+    customerSort,
+    setCustomerSort,
     route: stack[stack.length - 1]!,
     stack,
     navigate,
