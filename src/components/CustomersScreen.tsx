@@ -1,24 +1,38 @@
 import { useMemo, useState } from "react";
-import { Phone, HandCoins } from "lucide-react";
+import { Phone, HandCoins, ArrowDownUp } from "lucide-react";
 import { useApp } from "../context";
 import { getCustomerDues, findGroup } from "../store";
-import type { Frequency } from "../types";
+import type { Customer, Frequency } from "../types";
 import { ScreenHeader, SearchBar, Segmented, DuesRow, Avatar, EmptyState } from "./ui";
 
 type Filter = "all" | Frequency;
+type Sort = "time" | "az" | "za";
+
+const SORT_OPTIONS: { value: Sort; label: string }[] = [
+  { value: "time", label: "Time (oldest first)" },
+  { value: "az", label: "Name A–Z" },
+  { value: "za", label: "Name Z–A" },
+];
 
 export function CustomersScreen() {
   const { customers, deliveries, returns, payments, groups, navigate } = useApp();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
+  const [sort, setSort] = useState<Sort>("time");
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
+    const byTime = (a: (typeof customers)[number], b: (typeof customers)[number]) =>
+      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    const byName = (a: (typeof customers)[number], b: (typeof customers)[number]) =>
+      a.name.localeCompare(b.name);
+    const comparator =
+      sort === "az" ? byName : sort === "za" ? (a: Customer, b: Customer) => byName(b, a) : byTime;
     return customers
       .filter((c) => (filter === "all" ? true : c.frequency === filter))
       .filter((c) => !q || c.name.toLowerCase().includes(q) || c.phone.includes(q))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [customers, query, filter]);
+      .sort(comparator);
+  }, [customers, query, filter, sort]);
 
   return (
     <div className="pb-24">
@@ -26,16 +40,35 @@ export function CustomersScreen() {
 
       <div className="p-4 space-y-3">
         <SearchBar value={query} onChange={setQuery} />
-        <Segmented
-          options={[
-            { value: "all", label: "All" },
-            { value: "daily", label: "Daily" },
-            { value: "monthly", label: "Monthly" },
-            { value: "weekly", label: "Weekly" },
-          ]}
-          value={filter}
-          onChange={(v) => setFilter(v as Filter)}
-        />
+        <div className="flex items-center gap-2">
+          <div className="flex-1 min-w-0">
+            <Segmented
+              options={[
+                { value: "all", label: "All" },
+                { value: "daily", label: "Daily" },
+                { value: "monthly", label: "Monthly" },
+                { value: "weekly", label: "Weekly" },
+              ]}
+              value={filter}
+              onChange={(v) => setFilter(v as Filter)}
+            />
+          </div>
+          <div className="flex items-center gap-1 bg-white rounded-full pl-3 pr-2 py-1.5 shadow-sm shrink-0">
+            <ArrowDownUp size={16} className="text-sky-500" />
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as Sort)}
+              aria-label="Sort customers"
+              className="text-sm text-slate-700 font-medium bg-transparent outline-none"
+            >
+              {SORT_OPTIONS.map((s) => (
+                <option key={s.value} value={s.value}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
         {list.length === 0 ? (
           <EmptyState message="No customers yet. Tap Create Customer to add your first one." />
