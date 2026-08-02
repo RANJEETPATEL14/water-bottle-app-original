@@ -29,6 +29,7 @@ export type Route =
   | { name: "home" }
   | { name: "products" }
   | { name: "groups" }
+  | { name: "groupDetail"; id: string }
   | { name: "newGroup" }
   | { name: "customers" }
   | { name: "customerDetail"; id: string }

@@ -7,6 +7,7 @@ import { CustomerForm } from "./components/CustomerForm";
 import { CustomerDetail } from "./components/CustomerDetail";
 import { ProductsScreen } from "./components/ProductsScreen";
 import { GroupsScreen } from "./components/GroupsScreen";
+import { GroupDetailScreen } from "./components/GroupDetailScreen";
 import { NewGroupScreen } from "./components/NewGroupScreen";
 import { DeliveryScreen } from "./components/DeliveryScreen";
 import { DeliveryBrowseScreen } from "./components/DeliveryBrowseScreen";
@@ -31,6 +32,7 @@ const NO_BOTTOM_NAV = new Set([
   "customerForm",
   "customerDetail",
   "newGroup",
+  "groupDetail",
   "customers",
   "delivery",
   "openingDelivery",
@@ -55,6 +57,8 @@ function Router() {
       return <ProductsScreen />;
     case "groups":
       return <GroupsScreen />;
+    case "groupDetail":
+      return <GroupDetailScreen id={route.id} />;
     case "newGroup":
       return <NewGroupScreen />;
     case "delivery":
